@@ -1,0 +1,24 @@
+{
+  "blocksweeperRegistry": {
+    "celoSepolia": {
+      "chainId": 11142220,
+      "proxyAddress": "0xe8701E0C2cdb6708d98343572E63CFe7118A62C8",
+      "implementationAddress": "0x9803BE5349EeDF7C28aC1914b743757ce043b7cC",
+      "deploymentTxHash": "0x4f9b7e5ac7485bbc4f50702b210e9bc23b06d4a9e8011b10e64e81c6252e930e",
+      "verified": {
+        "proxy": true,
+        "implementation": true
+      }
+    },
+    "celo": {
+      "chainId": 42220,
+      "proxyAddress": "",
+      "implementationAddress": "",
+      "deploymentTxHash": "",
+      "verified": {
+        "proxy": false,
+        "implementation": false
+      }
+    }
+  }
+}

@@ -1,0 +1,193 @@
+:root {
+  color-scheme: dark;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background:
+    radial-gradient(circle at top, rgba(54, 124, 255, 0.18), transparent 35%),
+    linear-gradient(180deg, #08111f 0%, #0d1728 42%, #111d31 100%);
+  color: #f4f7fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.shell {
+  width: min(100%, 32rem);
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.hero-card,
+.panel {
+  background: rgba(9, 16, 29, 0.82);
+  border: 1px solid rgba(151, 179, 255, 0.16);
+  border-radius: 1.25rem;
+  padding: 1rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(12px);
+}
+
+.hero-card h1,
+.panel h2 {
+  margin: 0;
+}
+
+.eyebrow,
+.section-label {
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: #8fb5ff;
+}
+
+.hero-copy,
+.panel-copy,
+.meta {
+  margin: 0.75rem 0 0;
+  color: #c1cee5;
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #dce8ff;
+}
+
+.pill-ok {
+  background: rgba(73, 186, 125, 0.18);
+  color: #aef0c5;
+}
+
+.pill-warn {
+  background: rgba(255, 175, 70, 0.16);
+  color: #ffd7a0;
+}
+
+.details {
+  margin: 1rem 0 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.compact-details {
+  margin-top: 1rem;
+}
+
+.details div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.details dt {
+  color: #8ca3c9;
+  font-size: 0.8rem;
+}
+
+.details dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.primary-button {
+  width: 100%;
+  margin-top: 1rem;
+  border: 0;
+  border-radius: 0.95rem;
+  padding: 0.95rem 1rem;
+  background: linear-gradient(135deg, #28a66a, #4ad39f);
+  color: #071a12;
+  font-weight: 700;
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.status-ok,
+.status-error {
+  margin: 0.85rem 0 0;
+  font-size: 0.92rem;
+}
+
+.status-ok {
+  color: #aef0c5;
+}
+
+.status-error {
+  color: #ffb3a8;
+}
+
+.leaderboard {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rank {
+  min-width: 2.6rem;
+  font-weight: 700;
+  color: #89f0bf;
+}
+
+.player {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .shell {
+    padding-top: 2rem;
+  }
+
+  .hero-card,
+  .panel {
+    padding: 1.25rem;
+  }
+}
