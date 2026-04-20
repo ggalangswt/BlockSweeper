@@ -1,24 +1,40 @@
+import { useState } from "react";
+
+import { BottomNav } from "../components/BottomNav";
 import { LeaderboardPreview } from "../components/LeaderboardPreview";
 import { PlayCard } from "../components/PlayCard";
 import { WalletStatusCard } from "../components/WalletStatusCard";
 import { env } from "../env";
+import { usePlayBlockSweeper } from "../hooks/usePlayBlockSweeper";
 
 export function HomeScreen() {
+  const [activeTab, setActiveTab] = useState<"leaderboard" | "home" | "profile">("home");
+  const { play, registry, isPending, isConfirming } = usePlayBlockSweeper();
+
   return (
     <main className="shell">
-      <section className="hero-card">
-        <p className="eyebrow">MiniPay Mini App</p>
-        <h1>{env.appName}</h1>
-        <p className="hero-copy">
-          Mobile-first Minesweeper scaffold for Celo Mainnet. Wallet setup is
-          ready; gameplay, backend validation, and weekly leaderboard will be
-          layered in next.
-        </p>
+      <section className="hero-card hero-card-compact">
+        <div>
+          <p className="eyebrow">Weekly Prize</p>
+          <h1>{env.appName}</h1>
+          <p className="hero-subtitle">Play fast. Climb rank. Get paid.</p>
+        </div>
+        <span className="hero-chip">0.5 CELO</span>
       </section>
 
-      <WalletStatusCard />
-      <PlayCard />
-      <LeaderboardPreview />
+      {activeTab === "home" ? <PlayCard /> : null}
+      {activeTab === "leaderboard" ? <LeaderboardPreview /> : null}
+      {activeTab === "profile" ? <WalletStatusCard /> : null}
+
+      <BottomNav
+        activeTab={activeTab}
+        onHome={() => setActiveTab("home")}
+        onLeaderboard={() => setActiveTab("leaderboard")}
+        onProfile={() => setActiveTab("profile")}
+        onPlay={() => play()}
+        playBusy={isPending || isConfirming}
+        playDisabled={!registry || isPending || isConfirming}
+      />
     </main>
   );
 }

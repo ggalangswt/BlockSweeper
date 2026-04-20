@@ -6,25 +6,24 @@ const leaderboardRows = [
 
 export function LeaderboardPreview() {
   return (
-    <section className="panel">
+    <section className="panel leaderboard-panel">
       <div className="panel-header">
         <div>
           <p className="section-label">Weekly leaderboard</p>
-          <h2>Preview</h2>
+          <h2>Top Players</h2>
         </div>
-        <span className="pill">Placeholder</span>
+        <span className="pill leaderboard-pill">Top 5 paid</span>
       </div>
 
-      <div className="leaderboard">
+      <div className="leaderboard score-sheet">
         {leaderboardRows.map((row) => (
           <div className="leaderboard-row" key={row.rank}>
-            <span className="rank">#{row.rank}</span>
-            <div>
+            <span className="rank-badge">0{row.rank}</span>
+            <div className="leaderboard-copy">
               <p className="player">{row.player}</p>
-              <p className="meta">
-                {row.wins} wins • {row.plays} total plays
-              </p>
+              <p className="meta">{row.plays} plays</p>
             </div>
+            <strong className="wins-count">{row.wins}</strong>
           </div>
         ))}
       </div>

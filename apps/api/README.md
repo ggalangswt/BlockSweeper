@@ -1,13 +1,16 @@
-# API Placeholder
+# BlockSweeper API
 
-Folder ini disiapkan untuk backend BlockSweeper.
+Backend MVP untuk:
 
-Scope yang direncanakan:
-
-- create/start game session setelah transaksi `Play`
-- generate seed dan board game
+- start game session setelah transaksi `play()`
+- generate board Minesweeper server-side
 - validate hasil `win/lose`
-- hitung leaderboard mingguan
-- siapkan payout mingguan
+- simpan session secara in-memory
 
-Belum ada implementasi backend pada tahap ini.
+## Scripts
+
+```bash
+pnpm --filter api dev
+pnpm --filter api build
+pnpm --filter api test
+```
