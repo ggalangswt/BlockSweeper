@@ -10,13 +10,28 @@ export function getPool() {
       throw new Error("DATABASE_URL is required to run the API with Postgres");
     }
 
+    const connectionString = normalizeConnectionString(env.DATABASE_URL);
+
     poolInstance = new Pool({
-      connectionString: env.DATABASE_URL,
+      connectionString,
       ssl: {
         rejectUnauthorized: false,
       },
+      connectionTimeoutMillis: 10_000,
+      idleTimeoutMillis: 30_000,
     });
   }
 
   return poolInstance;
+}
+
+function normalizeConnectionString(databaseUrl: string) {
+  const parsed = new URL(databaseUrl);
+
+  parsed.searchParams.delete("sslmode");
+  parsed.searchParams.delete("sslcert");
+  parsed.searchParams.delete("sslkey");
+  parsed.searchParams.delete("sslrootcert");
+
+  return parsed.toString();
 }

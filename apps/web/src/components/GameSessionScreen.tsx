@@ -57,9 +57,7 @@ export function GameSessionScreen({
       ? "Board cleared. Win saved."
       : terminalStatus === "lost"
         ? "Mine hit. Loss saved."
-        : phase === "creating-session"
-          ? "Generating board..."
-          : null);
+        : null);
 
   return (
     <section className="session-screen">
