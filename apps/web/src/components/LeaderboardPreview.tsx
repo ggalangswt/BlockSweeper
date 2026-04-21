@@ -1,13 +1,19 @@
-const leaderboardRows = [
-  { rank: 1, player: "0x2A4...8F3", wins: 14, plays: 18 },
-  { rank: 2, player: "0x98B...0CD", wins: 11, plays: 16 },
-  { rank: 3, player: "0x51E...77A", wins: 9, plays: 12 },
-];
+import type { LeaderboardEntry } from "../lib/api/blocksweeperApi";
 
-export function LeaderboardPreview() {
+type LeaderboardPreviewProps = {
+  entries: LeaderboardEntry[];
+  error: string | null;
+  isLoading: boolean;
+};
+
+function shortAddress(address: string) {
+  return `${address.slice(0, 8)}...${address.slice(-4)}`;
+}
+
+export function LeaderboardPreview({ entries, error, isLoading }: LeaderboardPreviewProps) {
   return (
     <section className="panel leaderboard-panel">
-      <div className="panel-header">
+      <div className="panel-header leaderboard-header">
         <div>
           <p className="section-label">Weekly leaderboard</p>
           <h2>Top Players</h2>
@@ -15,17 +21,24 @@ export function LeaderboardPreview() {
         <span className="pill leaderboard-pill">Top 5 paid</span>
       </div>
 
-      <div className="leaderboard score-sheet">
-        {leaderboardRows.map((row) => (
-          <div className="leaderboard-row" key={row.rank}>
-            <span className="rank-badge">0{row.rank}</span>
-            <div className="leaderboard-copy">
-              <p className="player">{row.player}</p>
-              <p className="meta">{row.plays} plays</p>
-            </div>
-            <strong className="wins-count">{row.wins}</strong>
-          </div>
-        ))}
+      <div className="leaderboard-scroll">
+        <div className="leaderboard score-sheet">
+          {isLoading ? <p className="status-ok">Loading leaderboard...</p> : null}
+          {!isLoading && error ? <p className="status-error">{error}</p> : null}
+          {!isLoading && !error && entries.length === 0 ? <p className="status-ok">No runs recorded this week yet.</p> : null}
+          {!isLoading && !error
+            ? entries.map((row) => (
+                <div className="leaderboard-row" key={`${row.rank}-${row.walletAddress}`}>
+                  <span className="rank-badge">{String(row.rank).padStart(2, "0")}</span>
+                  <div className="leaderboard-copy">
+                    <p className="player">{shortAddress(row.walletAddress)}</p>
+                    <p className="meta">{row.totalPlays} plays</p>
+                  </div>
+                  <strong className="wins-count">{row.wins}</strong>
+                </div>
+              ))
+            : null}
+        </div>
       </div>
     </section>
   );

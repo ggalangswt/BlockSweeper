@@ -6,12 +6,17 @@ const txHashSchema = z.string().regex(/^0x[a-fA-F0-9]{64}$/, "Invalid transactio
 export const startGameSchema = z.object({
   walletAddress: walletAddressSchema,
   txHash: txHashSchema,
-  weekId: z.number().int().positive(),
+  weekId: z.number().int().positive().optional(),
 });
 
 export const cellPositionSchema = z.object({
   row: z.number().int().min(0),
   col: z.number().int().min(0),
+});
+
+export const revealCellsSchema = z.object({
+  sessionId: z.string().min(1),
+  cells: z.array(cellPositionSchema).min(1),
 });
 
 export const finishGameSchema = z
@@ -39,5 +44,16 @@ export const finishGameSchema = z
     }
   });
 
+export const weekIdQuerySchema = z.object({
+  weekId: z.coerce.number().int().positive().optional(),
+});
+
+export const walletStatsParamsSchema = z.object({
+  walletAddress: walletAddressSchema,
+});
+
 export type StartGameRequest = z.infer<typeof startGameSchema>;
+export type RevealCellsRequest = z.infer<typeof revealCellsSchema>;
 export type FinishGameRequest = z.infer<typeof finishGameSchema>;
+export type WeekIdQuery = z.infer<typeof weekIdQuerySchema>;
+export type WalletStatsParams = z.infer<typeof walletStatsParamsSchema>;

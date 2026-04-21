@@ -1,17 +1,27 @@
 import { randomUUID } from "node:crypto";
 
 import { HttpError } from "../../lib/http-error.js";
-import type { BoardCell, BoardConfig, CellPosition, FinishGameInput, GameBoard } from "./game.types.js";
+import type {
+  BoardCell,
+  BoardConfig,
+  CellPosition,
+  FinishGameInput,
+  GameBoard,
+  RevealCellsInput,
+} from "./game.types.js";
 
 export function createSessionId() {
   return randomUUID();
 }
 
-export function createBoard(config: BoardConfig): GameBoard {
+export function createBoard(config: BoardConfig, safePosition?: CellPosition): GameBoard {
   const totalCells = config.rows * config.cols;
   if (config.mineCount >= totalCells) {
     throw new HttpError(500, "Invalid board configuration");
   }
+
+  const forbiddenIndex =
+    safePosition !== undefined ? safePosition.row * config.cols + safePosition.col : undefined;
 
   const cells: BoardCell[][] = Array.from({ length: config.rows }, (_, row) =>
     Array.from({ length: config.cols }, (_, col) => ({
@@ -24,7 +34,11 @@ export function createBoard(config: BoardConfig): GameBoard {
 
   const mineIndexes = new Set<number>();
   while (mineIndexes.size < config.mineCount) {
-    mineIndexes.add(Math.floor(Math.random() * totalCells));
+    const index = Math.floor(Math.random() * totalCells);
+    if (index === forbiddenIndex) {
+      continue;
+    }
+    mineIndexes.add(index);
   }
 
   for (const index of mineIndexes) {
@@ -69,6 +83,48 @@ export function getNeighborPositions(position: CellPosition, config: BoardConfig
   }
 
   return neighbors;
+}
+
+export function revealCellsForSession(
+  board: GameBoard,
+  currentlyRevealedKeys: string[],
+  payload: RevealCellsInput,
+) {
+  assertPositionsInBounds(board, payload.cells);
+
+  const revealedKeys = new Set(currentlyRevealedKeys);
+  const newlyRevealed: Array<CellPosition & { adjacentMines: number }> = [];
+
+  for (const position of payload.cells) {
+    const key = toCellKey(position);
+    if (revealedKeys.has(key)) {
+      continue;
+    }
+
+    const cell = board.cells[position.row][position.col];
+    if (cell.isMine) {
+      return {
+        status: "lost" as const,
+        revealedCells: newlyRevealed,
+        explodedCell: position,
+        mineCells: getMineCells(board),
+        revealedKeys: Array.from(revealedKeys),
+      };
+    }
+
+    floodReveal(board, position, revealedKeys, newlyRevealed);
+  }
+
+  const safeCellCount = board.config.rows * board.config.cols - board.config.mineCount;
+  const hasWon = revealedKeys.size === safeCellCount;
+
+  return {
+    status: hasWon ? ("won" as const) : ("playing" as const),
+    revealedCells: newlyRevealed,
+    explodedCell: null,
+    mineCells: hasWon ? [] : [],
+    revealedKeys: Array.from(revealedKeys),
+  };
 }
 
 export function validateFinishPayload(board: GameBoard, payload: FinishGameInput) {
@@ -122,18 +178,59 @@ export function validateFinishPayload(board: GameBoard, payload: FinishGameInput
   };
 }
 
-export function toClientBoard(board: GameBoard) {
+export function toClientBoard(boardConfig: BoardConfig) {
   return {
-    rows: board.config.rows,
-    cols: board.config.cols,
-    mineCount: board.config.mineCount,
-    cells: board.cells.flat().map((cell) => ({
+    rows: boardConfig.rows,
+    cols: boardConfig.cols,
+    mineCount: boardConfig.mineCount,
+  };
+}
+
+function floodReveal(
+  board: GameBoard,
+  start: CellPosition,
+  revealedKeys: Set<string>,
+  newlyRevealed: Array<CellPosition & { adjacentMines: number }>,
+) {
+  const queue: CellPosition[] = [start];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const key = toCellKey(current);
+
+    if (revealedKeys.has(key)) {
+      continue;
+    }
+
+    const cell = board.cells[current.row]?.[current.col];
+    if (!cell || cell.isMine) {
+      continue;
+    }
+
+    revealedKeys.add(key);
+    newlyRevealed.push({
       row: cell.row,
       col: cell.col,
-      isMine: cell.isMine,
       adjacentMines: cell.adjacentMines,
-    })),
-  };
+    });
+
+    if (cell.adjacentMines !== 0) {
+      continue;
+    }
+
+    for (const neighbor of getNeighborPositions(current, board.config)) {
+      if (!revealedKeys.has(toCellKey(neighbor))) {
+        queue.push(neighbor);
+      }
+    }
+  }
+}
+
+function getMineCells(board: GameBoard) {
+  return board.cells
+    .flat()
+    .filter((cell) => cell.isMine)
+    .map(({ row, col }) => ({ row, col }));
 }
 
 function assertPositionsInBounds(board: GameBoard, positions: CellPosition[]) {

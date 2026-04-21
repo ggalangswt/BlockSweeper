@@ -89,7 +89,7 @@ export function BottomNav({
         type="button"
       >
         <ProfileIcon />
-        <span>Wallet</span>
+        <span>Profile</span>
       </button>
     </nav>
   );

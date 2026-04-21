@@ -15,6 +15,7 @@
   font-family: "Cube Cavern", "Segoe UI", sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  --cell-size: 2rem;
   background:
     linear-gradient(180deg, #090909 0%, #111114 45%, #17171c 100%);
   color: #f3efd7;
@@ -107,19 +108,6 @@ select {
   letter-spacing: 0.04em;
 }
 
-.hero-chip {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.6rem 0.95rem;
-  background: #f3f754;
-  color: #11130f;
-  font-family: "Upheaval", sans-serif;
-  letter-spacing: 0.05em;
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
 .panel-header {
   display: flex;
   align-items: flex-start;
@@ -189,6 +177,9 @@ select {
 .status-error {
   margin: 0.85rem 0 0;
   font-size: 0.92rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .status-ok {
@@ -203,6 +194,41 @@ select {
   margin-top: 1rem;
   display: grid;
   gap: 0.75rem;
+}
+
+.leaderboard-panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  max-height: calc(100vh - 14rem);
+}
+
+.leaderboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 0.75rem;
+  background: #17171b;
+}
+
+.leaderboard-scroll {
+  overflow-y: auto;
+  padding-right: 0.15rem;
+  scrollbar-width: thin;
+  scrollbar-color: #f3f754 #111216;
+}
+
+.leaderboard-scroll::-webkit-scrollbar {
+  width: 0.38rem;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-track {
+  background: #111216;
+  border-radius: 999px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-thumb {
+  background: #f3f754;
+  border-radius: 999px;
 }
 
 .leaderboard-row {
@@ -269,7 +295,7 @@ select {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: end;
-  padding: 0.95rem 1.15rem calc(0.85rem + env(safe-area-inset-bottom));
+  padding: 0.7rem 1rem calc(0.55rem + env(safe-area-inset-bottom));
   border-top: 0;
   border-radius: 0;
   background: rgba(242, 236, 222, 0.96);
@@ -279,16 +305,16 @@ select {
 .nav-item {
   display: grid;
   justify-items: center;
-  gap: 0.35rem;
+  gap: 0.22rem;
   border: 0;
   background: transparent;
   color: #1a1712;
-  padding: 0.2rem;
+  padding: 0.1rem;
 }
 
 .nav-item span {
   font-family: "Upheaval", sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   letter-spacing: 0.04em;
   font-weight: 600;
 }
@@ -298,19 +324,19 @@ select {
 }
 
 .nav-icon {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 1.45rem;
+  height: 1.45rem;
 }
 
 .play-dock {
   display: grid;
   justify-items: center;
-  margin-top: -2.85rem;
+  margin-top: -2.3rem;
 }
 
 .play-fab {
-  width: 4.4rem;
-  height: 4.4rem;
+  width: 3.7rem;
+  height: 3.7rem;
   border: 0;
   border-radius: 999px;
   background: linear-gradient(180deg, #fff99f 0%, #f3f754 46%, #cfd52f 100%);
@@ -325,20 +351,24 @@ select {
 }
 
 .play-icon {
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.4rem;
+  height: 1.4rem;
 }
 
 .play-label {
-  margin-top: 0.45rem;
+  margin-top: 0.25rem;
   font-family: "Upheaval", sans-serif;
-  font-size: 0.84rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #1a1712;
   letter-spacing: 0.05em;
 }
 
 .play-panel {
+  background: #171719;
+}
+
+.game-panel {
   background: #171719;
 }
 
@@ -432,6 +462,261 @@ select {
   background: #171719;
 }
 
+.mine-grid {
+  display: grid;
+  gap: 0.22rem;
+  padding: 0.4rem;
+  border-radius: 1rem;
+  background: #101013;
+  width: max-content;
+}
+
+.mine-cell {
+  width: var(--cell-size);
+  aspect-ratio: 1 / 1;
+  border: 0;
+  border-radius: 0.28rem;
+  background: #222228;
+  color: #f4f1e8;
+  font-family: "Upheaval", sans-serif;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.mine-cell-hidden {
+  background: #2a2a31;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+
+.mine-cell-revealed {
+  background: #131418;
+}
+
+.mine-cell-flagged {
+  color: #f3f754;
+}
+
+.mine-cell-mine {
+  color: #ffbf9c;
+}
+
+.mine-cell-exploded {
+  background: #43241d;
+  color: #ffbf9c;
+}
+
+.run-summary {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: #212127;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.run-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #d8d1c0;
+}
+
+.run-summary-row strong {
+  font-family: "Upheaval", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.start-run-button {
+  width: 100%;
+  margin-top: 1rem;
+  border: 0;
+  border-radius: 1rem;
+  padding: 0.95rem 1rem;
+  background: #f3f754;
+  color: #11130f;
+  font-family: "Upheaval", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.start-run-button:disabled {
+  opacity: 0.5;
+}
+
+.session-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.75rem;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(180deg, #080808 0%, #111216 100%);
+  background-size: 100% 3px, 3px 100%, 100% 100%;
+}
+
+.session-topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.session-back,
+.session-action-secondary {
+  border: 0;
+  border-radius: 0.8rem;
+  background: #232327;
+  color: #f2eee7;
+  padding: 0.85rem 0.9rem;
+  font-family: "Upheaval", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.session-back {
+  width: 2.45rem;
+  height: 2.45rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  align-self: stretch;
+}
+
+.session-back-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.session-title {
+  min-width: 0;
+}
+
+.session-title h2 {
+  margin: 0;
+  font-family: "Upheaval", sans-serif;
+  letter-spacing: 0.04em;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.session-week-label {
+  color: #f3f754;
+}
+
+.session-week-number {
+  color: #f4f1e8;
+}
+
+.session-bombs {
+  min-width: 4.45rem;
+  min-height: 2.45rem;
+  padding: 0.38rem 0.7rem 0.32rem;
+  border-radius: 0.8rem;
+  background: #232327;
+  display: grid;
+  gap: 0.02rem;
+  justify-items: center;
+  align-content: center;
+}
+
+.session-bombs span {
+  font-size: 0.56rem;
+  text-transform: uppercase;
+  color: #9d9888;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.session-bombs strong {
+  font-family: "Upheaval", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.session-bombs-won {
+  background: rgba(243, 247, 84, 0.16);
+}
+
+.session-bombs-won strong {
+  color: #f3f754;
+}
+
+.session-bombs-lost {
+  background: rgba(255, 136, 84, 0.12);
+}
+
+.session-bombs-lost strong {
+  color: #ff9b63;
+}
+
+.session-banner {
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(243, 247, 84, 0.1);
+  color: #f3f754;
+  font-family: "Upheaval", sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.session-banner-error {
+  background: rgba(255, 136, 84, 0.1);
+  color: #ff9b63;
+}
+
+.session-board-viewport {
+  overflow: auto;
+  padding: 0;
+  touch-action: pan-x pan-y;
+  cursor: grab;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.session-board-viewport::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.session-board-viewport:active {
+  cursor: grabbing;
+}
+
+.session-board-scale {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.session-loading {
+  min-width: 16rem;
+  min-height: 20rem;
+  display: grid;
+  place-items: center;
+  color: #f3f754;
+  font-family: "Upheaval", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.session-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.session-actions .start-run-button,
+.session-actions .session-action-secondary {
+  width: 100%;
+  margin-top: 0;
+  min-height: 3.5rem;
+}
+
 .wallet-badge {
   display: inline-flex;
   align-items: center;
@@ -445,25 +730,32 @@ select {
   font-weight: 600;
 }
 
+.wallet-badge-compact {
+  margin-top: 0.85rem;
+  padding: 0.42rem 0.68rem;
+  font-size: 0.74rem;
+}
+
 .wallet-identity {
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 1.3rem;
+  margin-top: 0.85rem;
+  padding: 0.85rem;
+  border-radius: 1rem;
   background: #212127;
 }
 
 .wallet-avatar {
-  width: 3rem;
-  height: 3rem;
+  width: 2.6rem;
+  height: 2.6rem;
   display: grid;
   place-items: center;
   border-radius: 999px;
   background: #f3f754;
   color: #11130f;
   font-weight: 800;
+  flex: 0 0 auto;
 }
 
 .wallet-name,
@@ -471,22 +763,39 @@ select {
   margin: 0;
 }
 
+.wallet-copy {
+  min-width: 0;
+}
+
 .wallet-name {
   font-family: "Upheaval", sans-serif;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   letter-spacing: 0.04em;
   font-weight: 700;
 }
 
 .wallet-handle {
   margin-top: 0.2rem;
-  font-size: 0.84rem;
+  font-size: 0.7rem;
   color: #9a958a;
+  word-break: break-all;
 }
 
 .wallet-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem;
+}
+
+.wallet-grid-compact {
+  gap: 0.55rem;
+}
+
+.wallet-grid-compact dt {
+  font-size: 0.68rem;
+}
+
+.wallet-grid-compact dd {
+  font-size: 0.86rem;
 }
 
 .wallet-dot {
@@ -499,6 +808,11 @@ select {
 
 .score-sheet .leaderboard-row {
   border: 0;
+}
+
+.wallet-panel .panel-copy {
+  margin-top: 0.8rem;
+  font-size: 0.78rem;
 }
 
 @media (min-width: 640px) {
