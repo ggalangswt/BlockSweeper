@@ -157,7 +157,16 @@ export function useBlockSweeperGame() {
       return;
     }
 
-    playContract.play();
+    try {
+      await playContract.play();
+    } catch (requestError) {
+      setPhase("idle");
+      setError(
+        requestError instanceof Error
+          ? toReadableErrorMessage(requestError.message)
+          : "Unable to start the session.",
+      );
+    }
   }, [isConnected, playContract, startSessionFromTx]);
 
   const revealCell = useCallback(

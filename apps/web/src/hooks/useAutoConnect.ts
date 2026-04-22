@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAccount, useChainId, useConnect, useSwitchChain } from "wagmi";
 
-import { hasInjectedProvider } from "../lib/ethereum";
+import { hasInjectedProvider, isMiniPayProvider } from "../lib/ethereum";
 import { getTargetChainId } from "../lib/chains";
 
 export function useAutoConnect() {
@@ -31,6 +31,11 @@ export function useAutoConnect() {
   }, [connect, connectors, isConnected, isPending]);
 
   useEffect(() => {
+    if (isMiniPayProvider()) {
+      attemptedSwitchRef.current = null;
+      return;
+    }
+
     if (!isConnected || !chainId || chainId === targetChainId || isSwitching) {
       if (!isConnected || chainId === targetChainId) {
         attemptedSwitchRef.current = null;

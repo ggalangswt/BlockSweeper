@@ -1,10 +1,11 @@
-import { useAccount, useChainId } from "wagmi";
+import { useAccount } from "wagmi";
 
 import { SUPPORTED_CHAINS, getChainName, isSupportedChain } from "../lib/chains";
+import { useWalletChainId } from "../hooks/useWalletChainId";
 
 export function WalletStatusCard() {
   const { address, connector, isConnected, status } = useAccount();
-  const chainId = useChainId();
+  const chainId = useWalletChainId();
   const supported = isSupportedChain(chainId);
   const shortAddress = isConnected ? `${address?.slice(0, 8)}...${address?.slice(-6)}` : "Not connected";
 
