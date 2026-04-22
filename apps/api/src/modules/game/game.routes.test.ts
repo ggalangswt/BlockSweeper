@@ -48,7 +48,7 @@ describe("game routes", () => {
     expect(body.board.rows).toBe(16);
     expect(body.board.cols).toBe(16);
     expect(body.board.mineCount).toBe(40);
-    expect(body.board.cells).toBeUndefined();
+    expect(body.board.cells).toHaveLength(16 * 16);
     expect(body.status).toBe("playing");
   });
 
@@ -66,7 +66,7 @@ describe("game routes", () => {
     expect(response.statusCode).toBe(400);
   });
 
-  it("reveals a first click safely", async () => {
+  it("reveals a valid first click when the opened cell is safe", async () => {
     const startResponse = await app.inject({
       method: "POST",
       url: "/game/start",
@@ -78,13 +78,18 @@ describe("game routes", () => {
     });
 
     const session = startResponse.json();
+    const safeCell = session.board.cells.find((cell: { isMine: boolean }) => !cell.isMine);
+
+    if (!safeCell) {
+      throw new Error("Expected at least one safe cell");
+    }
 
     const revealResponse = await app.inject({
       method: "POST",
       url: "/game/reveal",
       payload: {
         sessionId: session.sessionId,
-        cells: [{ row: 0, col: 0 }],
+        cells: [{ row: safeCell.row, col: safeCell.col }],
       },
     });
 

@@ -186,6 +186,20 @@ export function toClientBoard(boardConfig: BoardConfig) {
   };
 }
 
+export function toClientBoardWithCells(board: GameBoard) {
+  return {
+    rows: board.config.rows,
+    cols: board.config.cols,
+    mineCount: board.config.mineCount,
+    cells: board.cells.flat().map((cell) => ({
+      row: cell.row,
+      col: cell.col,
+      adjacentMines: cell.adjacentMines,
+      isMine: cell.isMine,
+    })),
+  };
+}
+
 function floodReveal(
   board: GameBoard,
   start: CellPosition,

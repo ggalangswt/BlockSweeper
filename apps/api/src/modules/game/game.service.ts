@@ -6,6 +6,7 @@ import {
   createSessionId,
   revealCellsForSession,
   toClientBoard,
+  toClientBoardWithCells,
   validateFinishPayload,
 } from "./game.logic.js";
 import type { GameSessionRepository } from "./game.repository.js";
@@ -16,6 +17,7 @@ export class GameService {
 
   async startGame(input: StartGameInput) {
     const currentWeekId = getCurrentWeekId();
+    const board = createBoard(DEFAULT_BOARD_CONFIG);
     const session = this.repository.create({
       id: createSessionId(),
       walletAddress: input.walletAddress,
@@ -23,7 +25,7 @@ export class GameService {
       weekId: currentWeekId,
       createdAt: new Date().toISOString(),
       finishedAt: null,
-      board: null,
+      board,
       status: "playing",
       revealedCellKeys: [],
       explodedCell: null,
@@ -37,7 +39,7 @@ export class GameService {
       txHash: createdSession.txHash,
       weekId: createdSession.weekId,
       status: createdSession.status,
-      board: toClientBoard(DEFAULT_BOARD_CONFIG),
+      board: toClientBoardWithCells(board),
       createdAt: createdSession.createdAt,
     };
   }
@@ -51,9 +53,8 @@ export class GameService {
     if (session.status !== "playing") {
       throw new HttpError(409, "Game session already finished");
     }
-
     if (!session.board) {
-      session.board = createBoard(DEFAULT_BOARD_CONFIG, input.cells[0]);
+      throw new HttpError(409, "Game session has no board state");
     }
 
     const revealResult = revealCellsForSession(session.board, session.revealedCellKeys, input);

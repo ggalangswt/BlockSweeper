@@ -11,7 +11,6 @@ type GameSessionScreenProps = {
   error: string | null;
   flaggedCount: number;
   isSubmittingFinish: boolean;
-  isResolvingMove: boolean;
   mineCount: number;
   onBack: () => void;
   onChord: (row: number, col: number) => Promise<void> | void;
@@ -38,7 +37,6 @@ export function GameSessionScreen({
   onStart,
   phase,
   result,
-  isResolvingMove,
   weekId,
 }: GameSessionScreenProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -127,7 +125,7 @@ export function GameSessionScreen({
           {board ? (
             <GameBoard
               board={board}
-              disabled={phase !== "playing" || Boolean(terminalStatus) || isSubmittingFinish || isResolvingMove}
+              disabled={phase !== "playing" || Boolean(terminalStatus) || isSubmittingFinish}
               onChord={onChord}
               onFlag={onFlag}
               onReveal={onReveal}

@@ -60,7 +60,6 @@ export function HomeScreen() {
           error={game.error}
           flaggedCount={game.stats.flaggedCount}
           isSubmittingFinish={game.isSubmittingFinish}
-          isResolvingMove={game.isResolvingMove}
           mineCount={game.stats.mineCount}
           onBack={game.resetToLobby}
           onChord={(row, col) => game.chordCell({ row, col })}

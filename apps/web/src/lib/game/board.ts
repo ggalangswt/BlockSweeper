@@ -21,15 +21,19 @@ export function createGameBoard(board: ApiBoard): GameBoard {
     cols: board.cols,
     mineCount: board.mineCount,
     cells: Array.from({ length: board.rows }, (_, row) =>
-      Array.from({ length: board.cols }, (_, col) => ({
-        row,
-        col,
-        adjacentMines: null,
-        isRevealed: false,
-        isFlagged: false,
-        isMine: false,
-        isExploded: false,
-      })),
+      Array.from({ length: board.cols }, (_, col) => {
+        const source = board.cells.find((cell) => cell.row === row && cell.col === col);
+
+        return {
+          row,
+          col,
+          adjacentMines: source?.adjacentMines ?? 0,
+          isRevealed: false,
+          isFlagged: false,
+          isMine: source?.isMine ?? false,
+          isExploded: false,
+        };
+      }),
     ),
   };
 }
@@ -74,6 +78,66 @@ export function applyRevealResult(
   }
 
   return nextBoard;
+}
+
+export function revealBoardCell(board: GameBoard, position: CellPosition) {
+  const nextBoard = cloneBoard(board);
+  const startCell = nextBoard.cells[position.row]?.[position.col];
+
+  if (!startCell || startCell.isFlagged || startCell.isRevealed) {
+    return {
+      board: nextBoard,
+      status: "playing" as const,
+      explodedCell: null,
+    };
+  }
+
+  if (startCell.isMine) {
+    startCell.isRevealed = true;
+    startCell.isExploded = true;
+
+    for (const cell of nextBoard.cells.flat()) {
+      if (cell.isMine) {
+        cell.isRevealed = true;
+      }
+    }
+
+    return {
+      board: nextBoard,
+      status: "lost" as const,
+      explodedCell: { row: startCell.row, col: startCell.col },
+    };
+  }
+
+  const queue: CellPosition[] = [position];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const cell = nextBoard.cells[current.row]?.[current.col];
+
+    if (!cell || cell.isRevealed || cell.isFlagged || cell.isMine) {
+      continue;
+    }
+
+    cell.isRevealed = true;
+
+    if ((cell.adjacentMines ?? 0) !== 0) {
+      continue;
+    }
+
+    for (const neighbor of getNeighborPositions(nextBoard, current)) {
+      const neighborCell = nextBoard.cells[neighbor.row][neighbor.col];
+      if (!neighborCell.isRevealed && !neighborCell.isFlagged && !neighborCell.isMine) {
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  return {
+    board: nextBoard,
+    status: hasClearedAllSafeCells(nextBoard) ? ("won" as const) : ("playing" as const),
+    explodedCell: null,
+  };
 }
 
 export function getRevealedSafeCells(board: GameBoard) {

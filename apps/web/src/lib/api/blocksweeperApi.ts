@@ -13,6 +13,12 @@ export type ApiBoard = {
   rows: number;
   cols: number;
   mineCount: number;
+  cells: Array<
+    CellPosition & {
+      adjacentMines: number;
+      isMine: boolean;
+    }
+  >;
 };
 
 export type StartGameRequest = {

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   finishGame,
-  revealCells,
   startGame,
   type CellPosition,
   type FinishGameResponse,
@@ -12,12 +11,12 @@ import {
 import { getCurrentWeekId } from "../lib/contracts/blockSweeper";
 import {
   applyFlags,
-  applyRevealResult,
   createGameBoard,
   getChordAction,
   getFlaggedCount,
   getRevealedSafeCells,
   hasClearedAllSafeCells,
+  revealBoardCell,
   toggleFlag,
   type GameBoard,
 } from "../lib/game/board";
@@ -54,24 +53,7 @@ export function useBlockSweeperGame() {
   const [result, setResult] = useState<FinishGameResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmittingFinish, setIsSubmittingFinish] = useState(false);
-  const [isResolvingMove, setIsResolvingMove] = useState(false);
   const startedTxHashes = useRef(new Set<string>());
-  const moveLockRef = useRef(false);
-  const boardRef = useRef<GameBoard | null>(null);
-  const sessionRef = useRef<StartGameResponse | null>(null);
-  const phaseRef = useRef<GamePhase>("idle");
-
-  useEffect(() => {
-    boardRef.current = board;
-  }, [board]);
-
-  useEffect(() => {
-    sessionRef.current = session;
-  }, [session]);
-
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
 
   const finalizeTerminalState = useCallback(
     async (status: "won" | "lost", nextBoard: GameBoard, explodedCell?: CellPosition | null) => {
@@ -110,8 +92,6 @@ export function useBlockSweeperGame() {
       startedTxHashes.current.add(txHash);
       setError(null);
       setResult(null);
-      setIsResolvingMove(false);
-      moveLockRef.current = false;
       setPhase("creating-session");
 
       try {
@@ -165,8 +145,6 @@ export function useBlockSweeperGame() {
     setSession(null);
     setBoard(null);
     setResult(null);
-    setIsResolvingMove(false);
-    moveLockRef.current = false;
 
     if (import.meta.env.DEV && (!isConnected || !playContract.registry)) {
       const devTxHash = `0x${Date.now().toString(16).padStart(64, "0")}`;
@@ -184,85 +162,53 @@ export function useBlockSweeperGame() {
 
   const revealCell = useCallback(
     async (position: CellPosition) => {
-      if (moveLockRef.current || isSubmittingFinish) {
+      if (!board || !session || phase !== "playing" || isSubmittingFinish) {
         return;
       }
 
-      const currentBoard = boardRef.current;
-      const currentSession = sessionRef.current;
-
-      if (!currentBoard || !currentSession || phaseRef.current !== "playing") {
-        return;
-      }
-
-      const localCell = currentBoard.cells[position.row]?.[position.col];
+      const localCell = board.cells[position.row]?.[position.col];
       if (!localCell || localCell.isFlagged || localCell.isRevealed) {
         return;
       }
 
-      moveLockRef.current = true;
-      setIsResolvingMove(true);
-
       try {
-        const revealResult = await revealCells({
-          sessionId: currentSession.sessionId,
-          cells: [position],
-        });
-
-        const nextBoard = applyRevealResult(
-          boardRef.current ?? currentBoard,
-          revealResult.revealedCells,
-          revealResult.mineCells,
-          revealResult.explodedCell,
-        );
+        const revealResult = revealBoardCell(board, position);
+        const nextBoard = revealResult.board;
         setBoard(nextBoard);
 
-        if (revealResult.status === "won" || revealResult.status === "lost") {
-          await finalizeTerminalState(revealResult.status, nextBoard, revealResult.explodedCell);
-          return;
-        }
-
-        if (hasClearedAllSafeCells(nextBoard)) {
+        if (revealResult.status === "lost") {
+          await finalizeTerminalState("lost", nextBoard, revealResult.explodedCell);
+        } else if (revealResult.status === "won" || hasClearedAllSafeCells(nextBoard)) {
           await finalizeTerminalState("won", nextBoard);
         }
       } catch (requestError) {
         setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Reveal failed");
-      } finally {
-        moveLockRef.current = false;
-        setIsResolvingMove(false);
       }
     },
-    [finalizeTerminalState, isSubmittingFinish],
+    [board, finalizeTerminalState, isSubmittingFinish, phase, session],
   );
 
   const flagCell = useCallback(
     (position: CellPosition) => {
-      if (!board || phase !== "playing" || isSubmittingFinish || isResolvingMove) {
+      if (!board || phase !== "playing" || isSubmittingFinish) {
         return;
       }
 
       setBoard(toggleFlag(board, position));
     },
-    [board, isResolvingMove, isSubmittingFinish, phase],
+    [board, isSubmittingFinish, phase],
   );
 
   const chordCell = useCallback(
     async (position: CellPosition) => {
-      if (moveLockRef.current || isSubmittingFinish) {
+      if (!board || !session || phase !== "playing" || isSubmittingFinish) {
         return;
       }
 
-      const currentBoard = boardRef.current;
-      const currentSession = sessionRef.current;
-
-      if (!currentBoard || !currentSession || phaseRef.current !== "playing") {
-        return;
-      }
-
-      const action = getChordAction(currentBoard, position);
+      const action = getChordAction(board, position);
 
       if (action.flagPositions.length > 0) {
-        const nextBoard = applyFlags(currentBoard, action.flagPositions);
+        const nextBoard = applyFlags(board, action.flagPositions);
         setBoard(nextBoard);
 
         if (hasClearedAllSafeCells(nextBoard)) {
@@ -276,39 +222,41 @@ export function useBlockSweeperGame() {
         return;
       }
 
-      moveLockRef.current = true;
-      setIsResolvingMove(true);
-
       try {
-        const revealResult = await revealCells({
-          sessionId: currentSession.sessionId,
-          cells: action.revealPositions,
-        });
+        let nextBoard = board;
+        let explodedCell: CellPosition | null = null;
+        let terminalStatus: "playing" | "won" | "lost" = "playing";
 
-        const nextBoard = applyRevealResult(
-          boardRef.current ?? currentBoard,
-          revealResult.revealedCells,
-          revealResult.mineCells,
-          revealResult.explodedCell,
-        );
+        for (const revealPosition of action.revealPositions) {
+          const revealResult = revealBoardCell(nextBoard, revealPosition);
+          nextBoard = revealResult.board;
+
+          if (revealResult.status === "lost") {
+            explodedCell = revealResult.explodedCell;
+            terminalStatus = "lost";
+            break;
+          }
+
+          if (revealResult.status === "won") {
+            terminalStatus = "won";
+          }
+        }
+
         setBoard(nextBoard);
 
-        if (revealResult.status === "won" || revealResult.status === "lost") {
-          await finalizeTerminalState(revealResult.status, nextBoard, revealResult.explodedCell);
+        if (terminalStatus === "lost") {
+          await finalizeTerminalState("lost", nextBoard, explodedCell);
           return;
         }
 
-        if (hasClearedAllSafeCells(nextBoard)) {
+        if (terminalStatus === "won" || hasClearedAllSafeCells(nextBoard)) {
           await finalizeTerminalState("won", nextBoard);
         }
       } catch (requestError) {
         setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Chord reveal failed");
-      } finally {
-        moveLockRef.current = false;
-        setIsResolvingMove(false);
       }
     },
-    [finalizeTerminalState, isSubmittingFinish],
+    [board, finalizeTerminalState, isSubmittingFinish, phase, session],
   );
 
   const resetToLobby = useCallback(() => {
@@ -318,8 +266,6 @@ export function useBlockSweeperGame() {
     setResult(null);
     setError(null);
     setIsSubmittingFinish(false);
-    setIsResolvingMove(false);
-    moveLockRef.current = false;
     playContract.reset();
   }, [playContract]);
 
@@ -350,7 +296,6 @@ export function useBlockSweeperGame() {
     result,
     error,
     isSubmittingFinish,
-    isResolvingMove,
     startNewGame,
     revealCell,
     flagCell,
