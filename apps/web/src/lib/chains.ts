@@ -1,7 +1,13 @@
 import { celo, celoSepolia } from "wagmi/chains";
 
+import { env } from "../env";
+
 export const supportedChains = [celo, celoSepolia] as const;
 export const SUPPORTED_CHAINS = supportedChains.map((chain) => chain.name);
+
+export function getTargetChainId() {
+  return env.registryAddressCelo ? celo.id : celoSepolia.id;
+}
 
 export function isSupportedChain(chainId?: number) {
   if (!chainId) {

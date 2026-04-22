@@ -20,30 +20,61 @@ export function HomeScreen() {
     <main className="shell">
       <section className="hero-card hero-card-compact">
         <div>
-          <p className="eyebrow">Weekly Prize</p>
+          <p className="eyebrow">Welcome to</p>
           <h1>{env.appName}</h1>
-          <p className="hero-subtitle">Play fast. Climb rank. Get paid.</p>
+          <p className="hero-subtitle">Sweep smart. Climb fast. Lock in your weekly rank.</p>
         </div>
       </section>
 
       {activeTab === "home" && !game.isSessionOpen ? (
-        <GamePanel
-          board={game.board}
-          error={game.error}
-          isConnected={game.isConnected}
-          isDevBypass={game.isDevBypass}
-          isSubmittingFinish={game.isSubmittingFinish}
-          mineCount={game.stats.mineCount}
-          attempts={weeklyStats.stats?.totalPlays ?? 0}
-          onFlag={(row, col) => game.flagCell({ row, col })}
-          onReveal={(row, col) => game.revealCell({ row, col })}
-          onStart={game.startNewGame}
-          phase={game.phase}
-          result={game.result}
-          txHash={(game.session?.txHash as `0x${string}` | undefined) ?? game.txHash}
-          weekId={game.weekId}
-          wins={weeklyStats.stats?.wins ?? 0}
-        />
+        <>
+          <GamePanel
+            board={game.board}
+            error={game.error}
+            isConnected={game.isConnected}
+            isDevBypass={game.isDevBypass}
+            isSubmittingFinish={game.isSubmittingFinish}
+            mineCount={game.stats.mineCount}
+            attempts={weeklyStats.stats?.totalPlays ?? 0}
+            onFlag={(row, col) => game.flagCell({ row, col })}
+            onReveal={(row, col) => game.revealCell({ row, col })}
+            onStart={game.startNewGame}
+            phase={game.phase}
+            result={game.result}
+            txHash={(game.session?.txHash as `0x${string}` | undefined) ?? game.txHash}
+            weekId={game.weekId}
+            wins={weeklyStats.stats?.wins ?? 0}
+          />
+
+          <section className="panel tutorial-panel">
+            <div className="panel-header">
+              <div>
+                <p className="section-label">Tutorial</p>
+                <h2>How to sweep</h2>
+              </div>
+              <span className="pill leaderboard-pill">216 safe tiles</span>
+            </div>
+
+            <div className="tutorial-grid">
+              <article className="tutorial-step">
+                <strong>Reveal</strong>
+                <p>Tap a tile to open it. Clear all 216 safe tiles to win the run.</p>
+              </article>
+              <article className="tutorial-step">
+                <strong>Flag</strong>
+                <p>Hold a hidden tile to drop a flag. Flags reduce the bomb counter even if the guess is wrong.</p>
+              </article>
+              <article className="tutorial-step">
+                <strong>Read numbers</strong>
+                <p>Each number tells you how many bombs touch that tile across all eight directions.</p>
+              </article>
+              <article className="tutorial-step">
+                <strong>Chord fast</strong>
+                <p>Double tap a revealed number to auto-open neighbors, or auto-flag the last hidden tile when it is forced.</p>
+              </article>
+            </div>
+          </section>
+        </>
       ) : null}
       {activeTab === "leaderboard" ? (
         <LeaderboardPreview

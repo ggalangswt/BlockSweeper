@@ -1,15 +1,20 @@
 import { useEffect, useRef } from "react";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useChainId, useConnect, useSwitchChain } from "wagmi";
 
 import { hasInjectedProvider } from "../lib/ethereum";
+import { getTargetChainId } from "../lib/chains";
 
 export function useAutoConnect() {
-  const attemptedRef = useRef(false);
+  const attemptedConnectRef = useRef(false);
+  const attemptedSwitchRef = useRef<number | null>(null);
   const { isConnected } = useAccount();
+  const chainId = useChainId();
   const { connect, connectors, isPending } = useConnect();
+  const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const targetChainId = getTargetChainId();
 
   useEffect(() => {
-    if (attemptedRef.current || isConnected || isPending || !hasInjectedProvider()) {
+    if (attemptedConnectRef.current || isConnected || isPending || !hasInjectedProvider()) {
       return;
     }
 
@@ -21,7 +26,23 @@ export function useAutoConnect() {
       return;
     }
 
-    attemptedRef.current = true;
+    attemptedConnectRef.current = true;
     connect({ connector: injectedConnector });
   }, [connect, connectors, isConnected, isPending]);
+
+  useEffect(() => {
+    if (!isConnected || !chainId || chainId === targetChainId || isSwitching) {
+      if (!isConnected || chainId === targetChainId) {
+        attemptedSwitchRef.current = null;
+      }
+      return;
+    }
+
+    if (attemptedSwitchRef.current === targetChainId) {
+      return;
+    }
+
+    attemptedSwitchRef.current = targetChainId;
+    switchChain({ chainId: targetChainId });
+  }, [chainId, isConnected, isSwitching, switchChain, targetChainId]);
 }
