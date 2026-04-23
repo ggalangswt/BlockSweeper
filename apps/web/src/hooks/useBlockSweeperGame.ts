@@ -35,15 +35,23 @@ function toReadableErrorMessage(message: string) {
   const normalized = message.toLowerCase();
 
   if (normalized.includes("user rejected") || normalized.includes("user denied")) {
-    return "Payment was cancelled.";
+    return "Transaction cancelled.";
   }
 
   if (normalized.includes("failed to fetch")) {
-    return "Backend is unreachable.";
+    return "Backend unavailable.";
+  }
+
+  if (normalized.includes("unable to start the session")) {
+    return "Session start failed.";
+  }
+
+  if (normalized.includes("wrong network")) {
+    return message;
   }
 
   if (message.length > 140) {
-    return "Unable to start the session.";
+    return "Session start failed.";
   }
 
   return message;
@@ -83,7 +91,7 @@ export function useBlockSweeperGame() {
         setResult(nextResult);
         setPhase(status);
       } catch (requestError) {
-        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Failed to finish game");
+        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Run finish failed.");
       } finally {
         setIsSubmittingFinish(false);
       }
@@ -116,9 +124,7 @@ export function useBlockSweeperGame() {
       } catch (requestError) {
         startedTxHashes.current.delete(txHash);
         setPhase("idle");
-        setError(
-          requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Failed to start game session",
-        );
+        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Session start failed.");
       }
     },
     [address, playContract],
@@ -180,11 +186,7 @@ export function useBlockSweeperGame() {
       await playContract.play();
     } catch (requestError) {
       setPhase("idle");
-      setError(
-        requestError instanceof Error
-          ? toReadableErrorMessage(requestError.message)
-          : "Unable to start the session.",
-      );
+      setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Session start failed.");
     }
   }, [isConnected, playContract, startSessionFromTx, walletChainId]);
 
@@ -235,7 +237,7 @@ export function useBlockSweeperGame() {
           await finalizeTerminalState("won", nextBoard);
         }
       } catch (requestError) {
-        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Reveal failed");
+        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Reveal failed.");
       } finally {
         setIsSecuringFirstTile(false);
         setPendingFirstReveal(null);
@@ -309,7 +311,7 @@ export function useBlockSweeperGame() {
           await finalizeTerminalState("won", nextBoard);
         }
       } catch (requestError) {
-        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Chord reveal failed");
+        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Reveal failed.");
       }
     },
     [board, finalizeTerminalState, isSubmittingFinish, phase, session],
