@@ -62,6 +62,10 @@ export function createBoard(config: BoardConfig, safePosition?: CellPosition): G
   return { config, cells };
 }
 
+export function createSafeFirstClickBoard(config: BoardConfig, safePosition: CellPosition) {
+  return createBoard(config, safePosition);
+}
+
 export function getNeighborPositions(position: CellPosition, config: BoardConfig) {
   const neighbors: CellPosition[] = [];
 
