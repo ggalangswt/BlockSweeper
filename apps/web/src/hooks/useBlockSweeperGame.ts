@@ -10,6 +10,7 @@ import {
   type StartGameResponse,
 } from "../lib/api/blocksweeperApi";
 import { getCurrentWeekId } from "../lib/contracts/blockSweeper";
+import { getTargetChainId, getTargetChainName, isSupportedChain } from "../lib/chains";
 import {
   applyFlags,
   applyRevealResult,
@@ -22,6 +23,8 @@ import {
   toggleFlag,
   type GameBoard,
 } from "../lib/game/board";
+import { isMiniPayProvider } from "../lib/ethereum";
+import { useWalletChainId } from "./useWalletChainId";
 import { usePlayBlockSweeper } from "./usePlayBlockSweeper";
 
 type GamePhase = "idle" | "pending-tx" | "creating-session" | "playing" | "won" | "lost";
@@ -48,6 +51,7 @@ function toReadableErrorMessage(message: string) {
 
 export function useBlockSweeperGame() {
   const { address, isConnected } = useAccount();
+  const walletChainId = useWalletChainId();
   const playContract = usePlayBlockSweeper();
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [board, setBoard] = useState<GameBoard | null>(null);
@@ -159,6 +163,15 @@ export function useBlockSweeperGame() {
       return;
     }
 
+    if (!walletChainId || walletChainId !== getTargetChainId()) {
+      setError(
+        isMiniPayProvider()
+          ? `MiniPay is on the wrong network. Open Settings > Developer Settings > Use Testnet to switch to ${getTargetChainName()}.`
+          : `Switch your wallet to ${getTargetChainName()} and try again.`,
+      );
+      return;
+    }
+
     try {
       await playContract.play();
     } catch (requestError) {
@@ -169,7 +182,7 @@ export function useBlockSweeperGame() {
           : "Unable to start the session.",
       );
     }
-  }, [isConnected, playContract, startSessionFromTx]);
+  }, [isConnected, playContract, startSessionFromTx, walletChainId]);
 
   const revealCell = useCallback(
     async (position: CellPosition) => {
@@ -322,6 +335,13 @@ export function useBlockSweeperGame() {
   const walletAddress =
     session?.walletAddress ?? address ?? (import.meta.env.DEV ? DEV_WALLET : null);
   const statsRefreshKey = `${session?.sessionId ?? "none"}:${result?.finishedAt ?? "pending"}:${phase}`;
+  const targetChainName = getTargetChainName();
+  const isWrongNetwork = isConnected && (!walletChainId || walletChainId !== getTargetChainId());
+  const wrongNetworkMessage = isWrongNetwork
+    ? isMiniPayProvider()
+      ? `MiniPay is on the wrong network. Open Settings > Developer Settings > Use Testnet to switch to ${targetChainName}.`
+      : `Wallet is on ${walletChainId && !isSupportedChain(walletChainId) ? `Chain ${walletChainId}` : "the wrong network"}. Switch to ${targetChainName}.`
+    : null;
 
   return {
     phase,
@@ -343,6 +363,10 @@ export function useBlockSweeperGame() {
     stats,
     walletAddress,
     statsRefreshKey,
+    walletChainId,
+    targetChainName,
+    isWrongNetwork,
+    wrongNetworkMessage,
     isSessionOpen:
       phase === "creating-session" || phase === "playing" || phase === "won" || phase === "lost",
   };
