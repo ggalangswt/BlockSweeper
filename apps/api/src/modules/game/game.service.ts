@@ -3,6 +3,7 @@ import { getCurrentWeekId } from "../../lib/week.js";
 import { DEFAULT_BOARD_CONFIG } from "./game.constants.js";
 import {
   createBoard,
+  createSafeFirstClickBoard,
   createSessionId,
   revealCellsForSession,
   toClientBoard,
@@ -57,6 +58,10 @@ export class GameService {
       throw new HttpError(409, "Game session has no board state");
     }
 
+    if (session.revealedCellKeys.length === 0) {
+      session.board = createSafeFirstClickBoard(session.board.config, input.cells[0]);
+    }
+
     const revealResult = revealCellsForSession(session.board, session.revealedCellKeys, input);
     session.revealedCellKeys = revealResult.revealedKeys;
 
@@ -71,6 +76,7 @@ export class GameService {
     return {
       sessionId: session.id,
       status: session.status,
+      board: toClientBoardWithCells(session.board),
       revealedCells: revealResult.revealedCells,
       explodedCell: revealResult.explodedCell,
       mineCells: revealResult.mineCells,
