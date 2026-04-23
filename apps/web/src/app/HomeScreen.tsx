@@ -55,27 +55,36 @@ export function HomeScreen() {
             <div className="panel-header">
               <div>
                 <p className="section-label">Tutorial</p>
-                <h2>How to sweep</h2>
+                <h2>Run guide</h2>
               </div>
-              <span className="pill leaderboard-pill">216 safe tiles</span>
+              <span className="pill leaderboard-pill">Clear 216 safe tiles</span>
             </div>
 
             <div className="tutorial-grid">
-              <article className="tutorial-step">
-                <strong>Reveal</strong>
-                <p>Tap a tile to open it. Clear all 216 safe tiles to win the run.</p>
+              <article className="tutorial-step tutorial-step-accent">
+                <span className="tutorial-kicker">Goal</span>
+                <strong>Clear the safe grid</strong>
+                <p>Reveal all 216 safe tiles. Hit one mine and the run ends immediately.</p>
               </article>
               <article className="tutorial-step">
-                <strong>Flag</strong>
-                <p>Hold a hidden tile to drop a flag. Flags reduce the bomb counter even if the guess is wrong.</p>
+                <span className="tutorial-kicker">Tap</span>
+                <strong>Reveal a tile</strong>
+                <p>Open hidden tiles fast and build safe space before taking bigger reads.</p>
               </article>
               <article className="tutorial-step">
-                <strong>Read numbers</strong>
-                <p>Each number tells you how many bombs touch that tile across all eight directions.</p>
+                <span className="tutorial-kicker">Hold</span>
+                <strong>Place a flag</strong>
+                <p>Mark suspected mines quickly. Flags also reduce the live bomb counter on the run screen.</p>
               </article>
               <article className="tutorial-step">
-                <strong>Chord fast</strong>
-                <p>Double tap a revealed number to auto-open neighbors, or auto-flag the last hidden tile when it is forced.</p>
+                <span className="tutorial-kicker">Read</span>
+                <strong>Trust the numbers</strong>
+                <p>Each number shows how many mines touch that tile across all 8 surrounding cells.</p>
+              </article>
+              <article className="tutorial-step">
+                <span className="tutorial-kicker">Double tap</span>
+                <strong>Chord faster</strong>
+                <p>On a revealed number, double tap to open forced neighbors or auto-flag the last hidden mine.</p>
               </article>
             </div>
           </section>
