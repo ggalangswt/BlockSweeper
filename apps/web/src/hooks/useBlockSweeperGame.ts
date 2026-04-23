@@ -23,7 +23,7 @@ import {
   toggleFlag,
   type GameBoard,
 } from "../lib/game/board";
-import { isMiniPayProvider } from "../lib/ethereum";
+import { getProviderName, isMiniPayProvider } from "../lib/ethereum";
 import { useWalletChainId } from "./useWalletChainId";
 import { usePlayBlockSweeper } from "./usePlayBlockSweeper";
 
@@ -31,15 +31,45 @@ type GamePhase = "idle" | "pending-tx" | "creating-session" | "playing" | "won" 
 
 const DEV_WALLET = "0x1111111111111111111111111111111111111111";
 
-function toReadableErrorMessage(message: string) {
+function toReadableErrorMessage(
+  message: string,
+  options?: { isMiniPay?: boolean; walletChainId?: number; targetChainId?: number; targetChainName?: string },
+) {
   const normalized = message.toLowerCase();
+  const walletChainLabel = options?.walletChainId ? `Current chain: ${options.walletChainId}. ` : "";
+  const targetChainLabel = options?.targetChainName ? `Target: ${options.targetChainName}.` : "";
 
   if (normalized.includes("user rejected") || normalized.includes("user denied")) {
     return "Transaction cancelled.";
   }
 
+  if (normalized.includes("connector not connected")) {
+    return "Wallet not connected.";
+  }
+
   if (normalized.includes("failed to fetch")) {
     return "Backend unavailable.";
+  }
+
+  if (normalized.includes("insufficient funds")) {
+    return "Insufficient balance for gas.";
+  }
+
+  if (
+    normalized.includes("method not supported") ||
+    normalized.includes("not supported") ||
+    normalized.includes("unsupported") ||
+    normalized.includes("not implemented")
+  ) {
+    return options?.isMiniPay
+      ? `MiniPay could not open the payment prompt. ${walletChainLabel}${targetChainLabel}`.trim()
+      : "Wallet could not open the transaction prompt.";
+  }
+
+  if (normalized.includes("wallet_sendcalls") || normalized.includes("wallet_sendcall")) {
+    return options?.isMiniPay
+      ? `MiniPay did not return a payment prompt. ${walletChainLabel}${targetChainLabel}`.trim()
+      : "Wallet did not return a transaction prompt.";
   }
 
   if (normalized.includes("unable to start the session")) {
@@ -51,7 +81,9 @@ function toReadableErrorMessage(message: string) {
   }
 
   if (message.length > 140) {
-    return "Session start failed.";
+    return options?.isMiniPay
+      ? `Payment prompt failed in MiniPay. ${walletChainLabel}${targetChainLabel}`.trim()
+      : "Session start failed.";
   }
 
   return message;
@@ -61,6 +93,9 @@ export function useBlockSweeperGame() {
   const { address, isConnected } = useAccount();
   const walletChainId = useWalletChainId();
   const playContract = usePlayBlockSweeper();
+  const isMiniPay = isMiniPayProvider();
+  const targetChainId = getTargetChainId();
+  const targetChainName = getTargetChainName();
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [board, setBoard] = useState<GameBoard | null>(null);
   const [session, setSession] = useState<StartGameResponse | null>(null);
@@ -91,12 +126,16 @@ export function useBlockSweeperGame() {
         setResult(nextResult);
         setPhase(status);
       } catch (requestError) {
-        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Run finish failed.");
+        setError(
+          requestError instanceof Error
+            ? toReadableErrorMessage(requestError.message, { isMiniPay, walletChainId, targetChainId, targetChainName })
+            : "Run finish failed.",
+        );
       } finally {
         setIsSubmittingFinish(false);
       }
     },
-    [session],
+    [isMiniPay, session, targetChainId, targetChainName, walletChainId],
   );
 
   const startSessionFromTx = useCallback(
@@ -124,10 +163,14 @@ export function useBlockSweeperGame() {
       } catch (requestError) {
         startedTxHashes.current.delete(txHash);
         setPhase("idle");
-        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Session start failed.");
+        setError(
+          requestError instanceof Error
+            ? toReadableErrorMessage(requestError.message, { isMiniPay, walletChainId, targetChainId, targetChainName })
+            : "Session start failed.",
+        );
       }
     },
-    [address, playContract],
+    [address, isMiniPay, playContract, targetChainId, targetChainName, walletChainId],
   );
 
   useEffect(() => {
@@ -151,8 +194,10 @@ export function useBlockSweeperGame() {
     }
 
     setPhase("idle");
-    setError(toReadableErrorMessage(playContract.error.message));
-  }, [playContract.error]);
+    setError(
+      toReadableErrorMessage(playContract.error.message, { isMiniPay, walletChainId, targetChainId, targetChainName }),
+    );
+  }, [isMiniPay, playContract.error, targetChainId, targetChainName, walletChainId]);
 
   const startNewGame = useCallback(async () => {
     setError(null);
@@ -173,11 +218,11 @@ export function useBlockSweeperGame() {
       return;
     }
 
-    if (!walletChainId || walletChainId !== getTargetChainId()) {
+    if (!walletChainId || walletChainId !== targetChainId) {
       setError(
-        isMiniPayProvider()
-          ? `MiniPay is on the wrong network. Open Settings > Developer Settings > Use Testnet to switch to ${getTargetChainName()}.`
-          : `Switch your wallet to ${getTargetChainName()} and try again.`,
+        isMiniPay
+          ? `MiniPay is on the wrong network. Open Settings > Developer Settings > Use Testnet to switch to ${targetChainName}.`
+          : `Switch your wallet to ${targetChainName} and try again.`,
       );
       return;
     }
@@ -186,9 +231,13 @@ export function useBlockSweeperGame() {
       await playContract.play();
     } catch (requestError) {
       setPhase("idle");
-      setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Session start failed.");
+      setError(
+        requestError instanceof Error
+          ? toReadableErrorMessage(requestError.message, { isMiniPay, walletChainId, targetChainId, targetChainName })
+          : "Session start failed.",
+      );
     }
-  }, [isConnected, playContract, startSessionFromTx, walletChainId]);
+  }, [isConnected, isMiniPay, playContract, startSessionFromTx, targetChainId, targetChainName, walletChainId]);
 
   const revealCell = useCallback(
     async (position: CellPosition) => {
@@ -237,13 +286,17 @@ export function useBlockSweeperGame() {
           await finalizeTerminalState("won", nextBoard);
         }
       } catch (requestError) {
-        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Reveal failed.");
+        setError(
+          requestError instanceof Error
+            ? toReadableErrorMessage(requestError.message, { isMiniPay, walletChainId, targetChainId, targetChainName })
+            : "Reveal failed.",
+        );
       } finally {
         setIsSecuringFirstTile(false);
         setPendingFirstReveal(null);
       }
     },
-    [board, finalizeTerminalState, isSubmittingFinish, phase, session],
+    [board, finalizeTerminalState, isMiniPay, isSubmittingFinish, phase, session, targetChainId, targetChainName, walletChainId],
   );
 
   const flagCell = useCallback(
@@ -311,10 +364,14 @@ export function useBlockSweeperGame() {
           await finalizeTerminalState("won", nextBoard);
         }
       } catch (requestError) {
-        setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Reveal failed.");
+        setError(
+          requestError instanceof Error
+            ? toReadableErrorMessage(requestError.message, { isMiniPay, walletChainId, targetChainId, targetChainName })
+            : "Reveal failed.",
+        );
       }
     },
-    [board, finalizeTerminalState, isSubmittingFinish, phase, session],
+    [board, finalizeTerminalState, isMiniPay, isSubmittingFinish, phase, session, targetChainId, targetChainName, walletChainId],
   );
 
   const resetToLobby = useCallback(() => {
@@ -348,10 +405,10 @@ export function useBlockSweeperGame() {
   const walletAddress =
     session?.walletAddress ?? address ?? (import.meta.env.DEV ? DEV_WALLET : null);
   const statsRefreshKey = `${session?.sessionId ?? "none"}:${result?.finishedAt ?? "pending"}:${phase}`;
-  const targetChainName = getTargetChainName();
-  const isWrongNetwork = isConnected && (!walletChainId || walletChainId !== getTargetChainId());
+  const providerName = getProviderName();
+  const isWrongNetwork = isConnected && (!walletChainId || walletChainId !== targetChainId);
   const wrongNetworkMessage = isWrongNetwork
-    ? isMiniPayProvider()
+    ? isMiniPay
       ? `MiniPay is on the wrong network. Open Settings > Developer Settings > Use Testnet to switch to ${targetChainName}.`
       : `Wallet is on ${walletChainId && !isSupportedChain(walletChainId) ? `Chain ${walletChainId}` : "the wrong network"}. Switch to ${targetChainName}.`
     : null;
@@ -377,7 +434,9 @@ export function useBlockSweeperGame() {
     walletAddress,
     statsRefreshKey,
     walletChainId,
+    targetChainId,
     targetChainName,
+    providerName,
     isWrongNetwork,
     wrongNetworkMessage,
     isSecuringFirstTile,

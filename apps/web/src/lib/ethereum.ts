@@ -16,3 +16,15 @@ export function isMiniPayProvider() {
   const provider = getInjectedProvider() as (EIP1193Provider & { isMiniPay?: boolean }) | undefined;
   return Boolean(provider?.isMiniPay);
 }
+
+export function getProviderName() {
+  if (isMiniPayProvider()) {
+    return "MiniPay";
+  }
+
+  if (hasInjectedProvider()) {
+    return "Injected wallet";
+  }
+
+  return "No wallet";
+}
