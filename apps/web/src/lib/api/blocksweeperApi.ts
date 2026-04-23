@@ -63,6 +63,7 @@ export type RevealCellsRequest = {
 export type RevealCellsResponse = {
   sessionId: string;
   status: "playing" | "won" | "lost";
+  board: ApiBoard;
   revealedCells: ApiBoardCell[];
   explodedCell: CellPosition | null;
   mineCells: CellPosition[];
