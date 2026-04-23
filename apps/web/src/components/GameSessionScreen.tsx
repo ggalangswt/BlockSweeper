@@ -59,13 +59,13 @@ export function GameSessionScreen({
       ? "Securing first tile..."
       : null) ??
     (terminalStatus === "won"
-      ? "Board cleared. Win saved."
+      ? "Clean sweep locked in."
       : terminalStatus === "lost"
-        ? "Mine hit. Loss saved."
+        ? "Mine tripped. Run logged."
         : null);
 
   return (
-    <section className="session-screen">
+    <section className={`session-screen${terminalStatus ? ` session-screen-${terminalStatus}` : ""}`}>
       <header className="session-topbar">
         <button className="session-back" onClick={onBack} type="button">
           <svg aria-hidden="true" className="session-back-icon" viewBox="0 0 24 24">
@@ -92,12 +92,12 @@ export function GameSessionScreen({
       </header>
 
       {bannerText ? (
-        <div className={`session-banner${error ? " session-banner-error" : ""}`}>{bannerText}</div>
+        <div className={`session-banner${error ? " session-banner-error" : ""}${terminalStatus ? ` session-banner-${terminalStatus}` : ""}`}>{bannerText}</div>
       ) : null}
 
       <div
         ref={viewportRef}
-        className="session-board-viewport"
+        className={`session-board-viewport${terminalStatus ? ` session-board-viewport-${terminalStatus}` : ""}`}
         onPointerDown={(event) => {
           if (!viewportRef.current || event.target !== event.currentTarget) {
             return;
@@ -157,7 +157,7 @@ export function GameSessionScreen({
           onClick={() => void onStart()}
           type="button"
         >
-          New session
+          {terminalStatus ? "Play Again" : "New session"}
         </button>
       </div>
     </section>
