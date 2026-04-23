@@ -97,6 +97,44 @@ describe("game routes", () => {
     expect(revealResponse.json().explodedCell).toBeNull();
   });
 
+  it("regenerates the board so the first clicked mine becomes safe", async () => {
+    const startResponse = await app.inject({
+      method: "POST",
+      url: "/game/start",
+      payload: {
+        walletAddress: "0x2323232323232323232323232323232323232323",
+        txHash: "0xbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+        weekId: 21,
+      },
+    });
+
+    const session = startResponse.json();
+    const mineCell = session.board.cells.find((cell: { isMine: boolean }) => cell.isMine);
+
+    if (!mineCell) {
+      throw new Error("Expected at least one mine cell");
+    }
+
+    const revealResponse = await app.inject({
+      method: "POST",
+      url: "/game/reveal",
+      payload: {
+        sessionId: session.sessionId,
+        cells: [{ row: mineCell.row, col: mineCell.col }],
+      },
+    });
+
+    expect(revealResponse.statusCode).toBe(200);
+    expect(revealResponse.json().status).not.toBe("lost");
+    expect(revealResponse.json().explodedCell).toBeNull();
+    expect(
+      revealResponse.json().board.cells.find(
+        (cell: { row: number; col: number; isMine: boolean }) =>
+          cell.row === mineCell.row && cell.col === mineCell.col,
+      )?.isMine,
+    ).toBe(false);
+  });
+
   it("rejects reveal on unknown session", async () => {
     const response = await app.inject({
       method: "POST",
@@ -207,7 +245,7 @@ describe("game routes", () => {
       },
     });
 
-    await app.inject({
+    const firstReveal = await app.inject({
       method: "POST",
       url: "/game/reveal",
       payload: {
@@ -216,6 +254,12 @@ describe("game routes", () => {
       },
     });
 
+    const revealedBoard = firstReveal.json().board;
+    const mineCell = revealedBoard.cells.find((cell: { isMine: boolean }) => cell.isMine);
+    if (!mineCell) {
+      throw new Error("Expected at least one mine cell");
+    }
+
     await app.inject({
       method: "POST",
       url: "/game/finish",
@@ -223,7 +267,7 @@ describe("game routes", () => {
         sessionId: start.json().sessionId,
         status: "lost",
         revealedCells: [],
-        explodedCell: { row: 1, col: 1 },
+        explodedCell: { row: mineCell.row, col: mineCell.col },
       },
     });
 
