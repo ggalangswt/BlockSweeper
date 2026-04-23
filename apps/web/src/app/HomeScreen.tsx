@@ -36,6 +36,8 @@ export function HomeScreen() {
           isWrongNetwork={game.isWrongNetwork}
           wrongNetworkMessage={game.wrongNetworkMessage}
           targetChainName={game.targetChainName}
+          isSecuringFirstTile={game.isSecuringFirstTile}
+          pendingFirstReveal={game.pendingFirstReveal}
           isSubmittingFinish={game.isSubmittingFinish}
             mineCount={game.stats.mineCount}
             attempts={weeklyStats.stats?.totalPlays ?? 0}
@@ -94,12 +96,14 @@ export function HomeScreen() {
           error={game.error}
           flaggedCount={game.stats.flaggedCount}
           isSubmittingFinish={game.isSubmittingFinish}
+          isSecuringFirstTile={game.isSecuringFirstTile}
           mineCount={game.stats.mineCount}
           onBack={game.resetToLobby}
           onChord={(row, col) => game.chordCell({ row, col })}
           onFlag={(row, col) => game.flagCell({ row, col })}
           onReveal={(row, col) => game.revealCell({ row, col })}
           onStart={game.startNewGame}
+          pendingFirstReveal={game.pendingFirstReveal}
           phase={game.phase}
           result={game.result}
           revealedSafeCount={game.stats.revealedSafeCount}
