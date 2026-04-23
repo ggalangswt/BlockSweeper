@@ -559,6 +559,14 @@ select {
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
 }
 
+.mine-cell-pending {
+  background: linear-gradient(180deg, #505128 0%, #35361f 100%);
+  color: #f3f754;
+  box-shadow:
+    inset 0 0 0 1px rgba(243, 247, 84, 0.25),
+    0 0 0 1px rgba(243, 247, 84, 0.08);
+}
+
 .mine-cell-revealed {
   background: #131418;
 }
