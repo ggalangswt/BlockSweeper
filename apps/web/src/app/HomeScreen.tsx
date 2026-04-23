@@ -30,10 +30,13 @@ export function HomeScreen() {
         <>
           <GamePanel
             board={game.board}
-            error={game.error}
-            isConnected={game.isConnected}
-            isDevBypass={game.isDevBypass}
-            isSubmittingFinish={game.isSubmittingFinish}
+          error={game.error}
+          isConnected={game.isConnected}
+          isDevBypass={game.isDevBypass}
+          isWrongNetwork={game.isWrongNetwork}
+          wrongNetworkMessage={game.wrongNetworkMessage}
+          targetChainName={game.targetChainName}
+          isSubmittingFinish={game.isSubmittingFinish}
             mineCount={game.stats.mineCount}
             attempts={weeklyStats.stats?.totalPlays ?? 0}
             onFlag={(row, col) => game.flagCell({ row, col })}
