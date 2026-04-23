@@ -54,19 +54,19 @@ export function GamePanel({
   const statusText = useMemo(() => {
     switch (phase) {
       case "pending-tx":
-        return "Confirm the onchain play transaction.";
+        return "Confirm transaction.";
       case "creating-session":
         return "Creating session.";
       case "playing":
-        return "Sweep the board. Right click to flag.";
+        return "Run live. Tap to reveal, hold to flag.";
       case "won":
         return "Run cleared. Win recorded.";
       case "lost":
-        return "Run failed. Loss recorded.";
+        return "Mine tripped. Loss recorded.";
       default:
         return isDevBypass
-          ? "Dev mode bypass is active. Start without wallet confirmation."
-          : "Start a run and clear every safe tile.";
+          ? "Dev bypass active. Start without wallet confirmation."
+          : "Start a run. Clear every safe tile.";
     }
   }, [isDevBypass, phase]);
 
@@ -121,7 +121,7 @@ export function GamePanel({
 
       <p className={error ? "status-error" : "status-ok"}>{error ?? statusText}</p>
       {!isConnected && !isDevBypass ? (
-        <p className="status-error">Open inside MiniPay or enable wallet access to use the live flow.</p>
+        <p className="status-error">Open inside MiniPay or enable wallet access to go live.</p>
       ) : null}
 
       {result ? (
