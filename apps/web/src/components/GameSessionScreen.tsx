@@ -10,6 +10,7 @@ type GameSessionScreenProps = {
   board: BlockSweeperBoard | null;
   error: string | null;
   flaggedCount: number;
+  isSecuringFirstTile: boolean;
   isSubmittingFinish: boolean;
   mineCount: number;
   onBack: () => void;
@@ -17,6 +18,7 @@ type GameSessionScreenProps = {
   onFlag: (row: number, col: number) => void;
   onReveal: (row: number, col: number) => Promise<void> | void;
   onStart: () => Promise<void> | void;
+  pendingFirstReveal: { row: number; col: number } | null;
   phase: GamePhase;
   result: FinishGameResponse | null;
   revealedSafeCount: number;
@@ -28,6 +30,7 @@ export function GameSessionScreen({
   board,
   error,
   flaggedCount,
+  isSecuringFirstTile,
   isSubmittingFinish,
   mineCount,
   onBack,
@@ -35,6 +38,7 @@ export function GameSessionScreen({
   onFlag,
   onReveal,
   onStart,
+  pendingFirstReveal,
   phase,
   result,
   weekId,
@@ -51,6 +55,9 @@ export function GameSessionScreen({
   const terminalStatus = phase === "won" || phase === "lost" ? phase : result?.status ?? null;
   const bannerText =
     error ??
+    (isSecuringFirstTile
+      ? "Securing first tile..."
+      : null) ??
     (terminalStatus === "won"
       ? "Board cleared. Win saved."
       : terminalStatus === "lost"
@@ -125,7 +132,8 @@ export function GameSessionScreen({
           {board ? (
             <GameBoard
               board={board}
-              disabled={phase !== "playing" || Boolean(terminalStatus) || isSubmittingFinish}
+              disabled={phase !== "playing" || Boolean(terminalStatus) || isSubmittingFinish || isSecuringFirstTile}
+              highlightedCell={pendingFirstReveal}
               onChord={onChord}
               onFlag={onFlag}
               onReveal={onReveal}
