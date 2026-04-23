@@ -59,6 +59,8 @@ export function useBlockSweeperGame() {
   const [result, setResult] = useState<FinishGameResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmittingFinish, setIsSubmittingFinish] = useState(false);
+  const [isSecuringFirstTile, setIsSecuringFirstTile] = useState(false);
+  const [pendingFirstReveal, setPendingFirstReveal] = useState<CellPosition | null>(null);
   const startedTxHashes = useRef(new Set<string>());
 
   const finalizeTerminalState = useCallback(
@@ -151,6 +153,8 @@ export function useBlockSweeperGame() {
     setSession(null);
     setBoard(null);
     setResult(null);
+    setIsSecuringFirstTile(false);
+    setPendingFirstReveal(null);
 
     if (import.meta.env.DEV && (!isConnected || !playContract.registry)) {
       const devTxHash = `0x${Date.now().toString(16).padStart(64, "0")}`;
@@ -197,6 +201,8 @@ export function useBlockSweeperGame() {
 
       try {
         if (getRevealedSafeCells(board).length === 0) {
+          setIsSecuringFirstTile(true);
+          setPendingFirstReveal(position);
           const revealResult = await revealCells({
             sessionId: session.sessionId,
             cells: [position],
@@ -230,6 +236,9 @@ export function useBlockSweeperGame() {
         }
       } catch (requestError) {
         setError(requestError instanceof Error ? toReadableErrorMessage(requestError.message) : "Reveal failed");
+      } finally {
+        setIsSecuringFirstTile(false);
+        setPendingFirstReveal(null);
       }
     },
     [board, finalizeTerminalState, isSubmittingFinish, phase, session],
@@ -313,6 +322,8 @@ export function useBlockSweeperGame() {
     setResult(null);
     setError(null);
     setIsSubmittingFinish(false);
+    setIsSecuringFirstTile(false);
+    setPendingFirstReveal(null);
     playContract.reset();
   }, [playContract]);
 
@@ -367,6 +378,8 @@ export function useBlockSweeperGame() {
     targetChainName,
     isWrongNetwork,
     wrongNetworkMessage,
+    isSecuringFirstTile,
+    pendingFirstReveal,
     isSessionOpen:
       phase === "creating-session" || phase === "playing" || phase === "won" || phase === "lost",
   };
