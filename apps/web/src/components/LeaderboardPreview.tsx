@@ -28,13 +28,20 @@ export function LeaderboardPreview({ entries, error, isLoading }: LeaderboardPre
           {!isLoading && !error && entries.length === 0 ? <p className="status-ok">No runs recorded this week yet.</p> : null}
           {!isLoading && !error
             ? entries.map((row) => (
-                <div className="leaderboard-row" key={`${row.rank}-${row.walletAddress}`}>
-                  <span className="rank-badge">{String(row.rank).padStart(2, "0")}</span>
+                <div
+                  className={`leaderboard-row${row.rank <= 3 ? ` leaderboard-row-rank-${row.rank}` : ""}`}
+                  key={`${row.rank}-${row.walletAddress}`}
+                >
+                  <span className={`rank-badge${row.rank <= 3 ? ` rank-badge-rank-${row.rank}` : ""}`}>
+                    {String(row.rank).padStart(2, "0")}
+                  </span>
                   <div className="leaderboard-copy">
                     <p className="player">{shortAddress(row.walletAddress)}</p>
                     <p className="meta">{row.totalPlays} plays</p>
                   </div>
-                  <strong className="wins-count">{row.wins}</strong>
+                  <strong className={`wins-count${row.rank <= 3 ? ` wins-count-rank-${row.rank}` : ""}`}>
+                    {row.wins}
+                  </strong>
                 </div>
               ))
             : null}
