@@ -15,6 +15,9 @@ type GamePanelProps = {
   txHash?: `0x${string}`;
   isConnected: boolean;
   isDevBypass: boolean;
+  isWrongNetwork: boolean;
+  wrongNetworkMessage: string | null;
+  targetChainName: string;
   isSubmittingFinish: boolean;
   mineCount: number;
   attempts: number;
@@ -33,6 +36,9 @@ export function GamePanel({
   txHash,
   isConnected,
   isDevBypass,
+  isWrongNetwork,
+  wrongNetworkMessage,
+  targetChainName,
   isSubmittingFinish,
   mineCount,
   attempts,
@@ -99,6 +105,14 @@ export function GamePanel({
         </div>
       </dl>
 
+      {isWrongNetwork && wrongNetworkMessage ? (
+        <div className="network-banner" role="alert">
+          <p className="network-banner-title">Wrong network</p>
+          <p>{wrongNetworkMessage}</p>
+          <p className="network-banner-hint">This run requires {targetChainName} before you can start.</p>
+        </div>
+      ) : null}
+
       <p className={error ? "status-error" : "status-ok"}>{error ?? statusText}</p>
       {!isConnected && !isDevBypass ? (
         <p className="status-error">Open inside MiniPay or enable wallet access to use the live flow.</p>
@@ -130,7 +144,7 @@ export function GamePanel({
 
       <button
         className="start-run-button"
-        disabled={phase === "pending-tx" || phase === "creating-session" || isSubmittingFinish}
+        disabled={phase === "pending-tx" || phase === "creating-session" || isSubmittingFinish || isWrongNetwork}
         onClick={() => void onStart()}
         type="button"
       >
