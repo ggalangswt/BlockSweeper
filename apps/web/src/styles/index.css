@@ -190,6 +190,39 @@ select {
   color: #ffb08e;
 }
 
+.network-banner {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 176, 142, 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 176, 142, 0.1), rgba(255, 176, 142, 0.04)),
+    #231c1b;
+  color: #ffd2b8;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.network-banner p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.network-banner-title {
+  font-family: "Upheaval", sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffb08e;
+}
+
+.network-banner-hint {
+  color: #f0d8c5;
+}
+
+.network-banner-compact {
+  margin-top: 1rem;
+}
+
 .leaderboard {
   margin-top: 1rem;
   display: grid;
