@@ -5,6 +5,7 @@ import type { GameBoard as BlockSweeperBoard } from "../lib/game/board";
 type GameBoardProps = {
   board: BlockSweeperBoard;
   disabled?: boolean;
+  highlightedCell?: { row: number; col: number } | null;
   onReveal: (row: number, col: number) => void;
   onFlag: (row: number, col: number) => void;
   onChord: (row: number, col: number) => void;
@@ -13,7 +14,7 @@ type GameBoardProps = {
 const LONG_PRESS_MS = 380;
 const DOUBLE_TAP_MS = 260;
 
-export function GameBoard({ board, disabled, onReveal, onFlag, onChord }: GameBoardProps) {
+export function GameBoard({ board, disabled, highlightedCell, onReveal, onFlag, onChord }: GameBoardProps) {
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const lastTapRef = useRef<{ key: string; time: number } | null>(null);
@@ -44,6 +45,7 @@ export function GameBoard({ board, disabled, onReveal, onFlag, onChord }: GameBo
           cell.isFlagged ? "mine-cell-flagged" : "",
           cell.isMine && cell.isRevealed ? "mine-cell-mine" : "",
           cell.isExploded ? "mine-cell-exploded" : "",
+          highlightedCell?.row === cell.row && highlightedCell?.col === cell.col ? "mine-cell-pending" : "",
           !cell.isRevealed && !cell.isFlagged ? "mine-cell-hidden" : "",
         ]
           .filter(Boolean)
