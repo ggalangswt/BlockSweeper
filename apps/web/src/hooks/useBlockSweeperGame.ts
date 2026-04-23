@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   finishGame,
+  revealCells,
   startGame,
   type CellPosition,
   type FinishGameResponse,
@@ -11,6 +12,7 @@ import {
 import { getCurrentWeekId } from "../lib/contracts/blockSweeper";
 import {
   applyFlags,
+  applyRevealResult,
   createGameBoard,
   getChordAction,
   getFlaggedCount,
@@ -181,6 +183,29 @@ export function useBlockSweeperGame() {
       }
 
       try {
+        if (getRevealedSafeCells(board).length === 0) {
+          const revealResult = await revealCells({
+            sessionId: session.sessionId,
+            cells: [position],
+          });
+
+          const serverBoard = applyRevealResult(
+            createGameBoard(revealResult.board),
+            revealResult.revealedCells,
+            revealResult.mineCells,
+            revealResult.explodedCell,
+          );
+          setBoard(serverBoard);
+
+          if (revealResult.status === "lost") {
+            await finalizeTerminalState("lost", serverBoard, revealResult.explodedCell);
+          } else if (revealResult.status === "won" || hasClearedAllSafeCells(serverBoard)) {
+            await finalizeTerminalState("won", serverBoard);
+          }
+
+          return;
+        }
+
         const revealResult = revealBoardCell(board, position);
         const nextBoard = revealResult.board;
         setBoard(nextBoard);
