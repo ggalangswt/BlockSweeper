@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createBoard, validateFinishPayload } from "./game.logic.js";
+import { createBoard, createSafeFirstClickBoard, validateFinishPayload } from "./game.logic.js";
 
 describe("game.logic", () => {
   it("creates a 16x16 board with 40 bombs", () => {
@@ -51,6 +51,19 @@ describe("game.logic", () => {
 
       expect(cell.adjacentMines).toBe(countedMines);
     }
+  });
+
+  it("never places a mine on the safe first-click position", () => {
+    const board = createSafeFirstClickBoard(
+      {
+        rows: 16,
+        cols: 16,
+        mineCount: 40,
+      },
+      { row: 5, col: 7 },
+    );
+
+    expect(board.cells[5][7].isMine).toBe(false);
   });
 
   it("accepts valid win payloads", () => {
