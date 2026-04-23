@@ -18,6 +18,8 @@ type GamePanelProps = {
   isWrongNetwork: boolean;
   wrongNetworkMessage: string | null;
   targetChainName: string;
+  isSecuringFirstTile: boolean;
+  pendingFirstReveal: { row: number; col: number } | null;
   isSubmittingFinish: boolean;
   mineCount: number;
   attempts: number;
@@ -39,6 +41,8 @@ export function GamePanel({
   isWrongNetwork,
   wrongNetworkMessage,
   targetChainName,
+  isSecuringFirstTile,
+  pendingFirstReveal,
   isSubmittingFinish,
   mineCount,
   attempts,
@@ -113,6 +117,8 @@ export function GamePanel({
         </div>
       ) : null}
 
+      {isSecuringFirstTile ? <p className="status-ok">Securing first tile...</p> : null}
+
       <p className={error ? "status-error" : "status-ok"}>{error ?? statusText}</p>
       {!isConnected && !isDevBypass ? (
         <p className="status-error">Open inside MiniPay or enable wallet access to use the live flow.</p>
@@ -135,7 +141,8 @@ export function GamePanel({
       {board ? (
         <GameBoard
           board={board}
-          disabled={phase !== "playing" || isSubmittingFinish}
+          disabled={phase !== "playing" || isSubmittingFinish || isSecuringFirstTile}
+          highlightedCell={pendingFirstReveal}
           onChord={() => {}}
           onReveal={onReveal}
           onFlag={onFlag}
