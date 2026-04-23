@@ -9,6 +9,7 @@ export function WalletStatusCard() {
   const chainId = useWalletChainId();
   const supported = isSupportedChain(chainId);
   const targetChainName = getTargetChainName();
+  const readinessLabel = supported ? "Ready to play" : "Wrong network";
   const shortAddress = isConnected ? `${address?.slice(0, 8)}...${address?.slice(-6)}` : "Not connected";
 
   return (
@@ -25,7 +26,7 @@ export function WalletStatusCard() {
 
       <div className="wallet-badge wallet-badge-compact">
         <span className="wallet-dot" />
-        <span>{supported ? "Ready to play" : "Network check"}</span>
+        <span>{readinessLabel}</span>
       </div>
 
       <div className="wallet-identity">
@@ -37,6 +38,10 @@ export function WalletStatusCard() {
       </div>
 
       <dl className="details wallet-grid wallet-grid-compact">
+        <div>
+          <dt>Status</dt>
+          <dd>{readinessLabel}</dd>
+        </div>
         <div>
           <dt>Wallet</dt>
           <dd>{isConnected ? "Connected" : status}</dd>
@@ -50,8 +55,12 @@ export function WalletStatusCard() {
           <dd>{shortAddress}</dd>
         </div>
         <div>
-          <dt>Network</dt>
+          <dt>Current network</dt>
           <dd>{getChainName(chainId)}</dd>
+        </div>
+        <div>
+          <dt>Target network</dt>
+          <dd>{targetChainName}</dd>
         </div>
       </dl>
 
