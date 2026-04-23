@@ -1,12 +1,14 @@
 import { useAccount } from "wagmi";
 
-import { SUPPORTED_CHAINS, getChainName, isSupportedChain } from "../lib/chains";
+import { SUPPORTED_CHAINS, getChainName, getTargetChainName, isSupportedChain } from "../lib/chains";
+import { isMiniPayProvider } from "../lib/ethereum";
 import { useWalletChainId } from "../hooks/useWalletChainId";
 
 export function WalletStatusCard() {
   const { address, connector, isConnected, status } = useAccount();
   const chainId = useWalletChainId();
   const supported = isSupportedChain(chainId);
+  const targetChainName = getTargetChainName();
   const shortAddress = isConnected ? `${address?.slice(0, 8)}...${address?.slice(-6)}` : "Not connected";
 
   return (
@@ -52,6 +54,17 @@ export function WalletStatusCard() {
           <dd>{getChainName(chainId)}</dd>
         </div>
       </dl>
+
+      {!supported && isConnected ? (
+        <div className="network-banner network-banner-compact" role="alert">
+          <p className="network-banner-title">Wrong network</p>
+          <p>
+            {isMiniPayProvider()
+              ? `MiniPay is on the wrong network. Open Settings > Developer Settings > Use Testnet to switch to ${targetChainName}.`
+              : `Switch your wallet to ${targetChainName} before starting a run.`}
+          </p>
+        </div>
+      ) : null}
 
       <p className="panel-copy supported-copy">Supports {SUPPORTED_CHAINS.join(" and ")}</p>
     </section>
