@@ -56,13 +56,13 @@ export function GamePanel({
       case "pending-tx":
         return "Confirm the onchain play transaction.";
       case "creating-session":
-        return "Creating server session.";
+        return "Creating session.";
       case "playing":
         return "Sweep the board. Right click to flag.";
       case "won":
-        return "Board cleared. Backend confirmed the win.";
+        return "Run cleared. Win recorded.";
       case "lost":
-        return "Run failed. Backend recorded the loss.";
+        return "Run failed. Loss recorded.";
       default:
         return isDevBypass
           ? "Dev mode bypass is active. Start without wallet confirmation."
