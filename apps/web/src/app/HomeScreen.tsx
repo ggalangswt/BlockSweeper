@@ -30,20 +30,23 @@ export function HomeScreen() {
         <>
           <GamePanel
             board={game.board}
-          error={game.error}
-          isConnected={game.isConnected}
-          isDevBypass={game.isDevBypass}
-          isWrongNetwork={game.isWrongNetwork}
-          wrongNetworkMessage={game.wrongNetworkMessage}
-          targetChainName={game.targetChainName}
-          isSecuringFirstTile={game.isSecuringFirstTile}
-          pendingFirstReveal={game.pendingFirstReveal}
-          isSubmittingFinish={game.isSubmittingFinish}
+            error={game.error}
+            isConnected={game.isConnected}
+            isDevBypass={game.isDevBypass}
+            isWrongNetwork={game.isWrongNetwork}
+            wrongNetworkMessage={game.wrongNetworkMessage}
+            targetChainName={game.targetChainName}
+            isMiniPay={game.providerName === "MiniPay"}
+            isSwitchingNetwork={game.isSwitchingNetwork}
+            isSecuringFirstTile={game.isSecuringFirstTile}
+            pendingFirstReveal={game.pendingFirstReveal}
+            isSubmittingFinish={game.isSubmittingFinish}
             mineCount={game.stats.mineCount}
             attempts={weeklyStats.stats?.totalPlays ?? 0}
             onFlag={(row, col) => game.flagCell({ row, col })}
             onReveal={(row, col) => game.revealCell({ row, col })}
             onStart={game.startNewGame}
+            onSwitchNetwork={game.switchToTargetChain}
             phase={game.phase}
             result={game.result}
             txHash={(game.session?.txHash as `0x${string}` | undefined) ?? game.txHash}

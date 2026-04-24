@@ -18,6 +18,8 @@ type GamePanelProps = {
   isWrongNetwork: boolean;
   wrongNetworkMessage: string | null;
   targetChainName: string;
+  isMiniPay: boolean;
+  isSwitchingNetwork: boolean;
   isSecuringFirstTile: boolean;
   pendingFirstReveal: { row: number; col: number } | null;
   isSubmittingFinish: boolean;
@@ -25,6 +27,7 @@ type GamePanelProps = {
   attempts: number;
   wins: number;
   onStart: () => Promise<void> | void;
+  onSwitchNetwork: () => Promise<void> | void;
   onReveal: (row: number, col: number) => Promise<void> | void;
   onFlag: (row: number, col: number) => void;
 };
@@ -41,6 +44,8 @@ export function GamePanel({
   isWrongNetwork,
   wrongNetworkMessage,
   targetChainName,
+  isMiniPay,
+  isSwitchingNetwork,
   isSecuringFirstTile,
   pendingFirstReveal,
   isSubmittingFinish,
@@ -48,6 +53,7 @@ export function GamePanel({
   attempts,
   wins,
   onStart,
+  onSwitchNetwork,
   onReveal,
   onFlag,
 }: GamePanelProps) {
@@ -149,14 +155,25 @@ export function GamePanel({
         />
       ) : null}
 
-      <button
-        className="start-run-button"
-        disabled={phase === "pending-tx" || phase === "creating-session" || isSubmittingFinish || isWrongNetwork}
-        onClick={() => void onStart()}
-        type="button"
-      >
-        {phase === "playing" ? "Restart Run" : "Start Run"}
-      </button>
+      {isWrongNetwork && !isMiniPay ? (
+        <button
+          className="start-run-button"
+          disabled={isSwitchingNetwork || phase === "pending-tx" || phase === "creating-session" || isSubmittingFinish}
+          onClick={() => void onSwitchNetwork()}
+          type="button"
+        >
+          {isSwitchingNetwork ? "Changing network..." : `Change to ${targetChainName}!`}
+        </button>
+      ) : (
+        <button
+          className="start-run-button"
+          disabled={phase === "pending-tx" || phase === "creating-session" || isSubmittingFinish || isWrongNetwork}
+          onClick={() => void onStart()}
+          type="button"
+        >
+          {phase === "playing" ? "Restart Run" : "Start Run"}
+        </button>
+      )}
     </section>
   );
 }
