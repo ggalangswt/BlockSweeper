@@ -23,7 +23,7 @@ import {
   toggleFlag,
   type GameBoard,
 } from "../lib/game/board";
-import { getProviderName, isMiniPayProvider } from "../lib/ethereum";
+import { ensureInjectedChain, getProviderName, isMiniPayProvider } from "../lib/ethereum";
 import { useWalletChainId } from "./useWalletChainId";
 import { usePlayBlockSweeper } from "./usePlayBlockSweeper";
 
@@ -103,6 +103,7 @@ export function useBlockSweeperGame() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmittingFinish, setIsSubmittingFinish] = useState(false);
   const [isSecuringFirstTile, setIsSecuringFirstTile] = useState(false);
+  const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
   const [pendingFirstReveal, setPendingFirstReveal] = useState<CellPosition | null>(null);
   const startedTxHashes = useRef(new Set<string>());
 
@@ -238,6 +239,27 @@ export function useBlockSweeperGame() {
       );
     }
   }, [isConnected, isMiniPay, playContract, startSessionFromTx, targetChainId, targetChainName, walletChainId]);
+
+  const switchToTargetChain = useCallback(async () => {
+    if (isMiniPay) {
+      return;
+    }
+
+    setError(null);
+    setIsSwitchingNetwork(true);
+
+    try {
+      await ensureInjectedChain(targetChainId);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? toReadableErrorMessage(requestError.message, { isMiniPay, walletChainId, targetChainId, targetChainName })
+          : `Switch to ${targetChainName} failed.`,
+      );
+    } finally {
+      setIsSwitchingNetwork(false);
+    }
+  }, [isMiniPay, targetChainId, targetChainName, walletChainId]);
 
   const revealCell = useCallback(
     async (position: CellPosition) => {
@@ -420,7 +442,9 @@ export function useBlockSweeperGame() {
     result,
     error,
     isSubmittingFinish,
+    isSwitchingNetwork,
     startNewGame,
+    switchToTargetChain,
     revealCell,
     flagCell,
     chordCell,
