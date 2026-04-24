@@ -1,9 +1,11 @@
-# Shared Placeholder
+# Shared Workspace Package
 
-Folder ini disiapkan untuk:
+This workspace directory is reserved for code that may later be shared across the frontend, API, and contract tooling.
 
-- type payload API
+Expected future uses:
+
+- shared API payload types
 - shared constants
-- shared leaderboard/session models
+- session and leaderboard models
 
-Belum ada package yang diinisiasi pada tahap ini.
+No shared package has been initialized yet, so this directory is currently a placeholder by design.
