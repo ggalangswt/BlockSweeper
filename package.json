@@ -3,12 +3,22 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@10.33.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "dev:api": "pnpm --filter api dev",
     "build:web": "pnpm --filter web build",
     "build:api": "pnpm --filter api build",
     "test:api": "pnpm --filter api test",
-    "preview:web": "pnpm --filter web preview"
+    "preview:web": "pnpm --filter web preview",
+    "npm:dev:web": "npm run dev --workspace=apps/web",
+    "npm:dev:api": "npm run dev --workspace=apps/api",
+    "npm:build:web": "npm run build --workspace=apps/web",
+    "npm:build:api": "npm run build --workspace=apps/api",
+    "npm:test:api": "npm run test --workspace=apps/api",
+    "npm:preview:web": "npm run preview --workspace=apps/web"
   }
 }
