@@ -8,12 +8,14 @@ import { TutorialModal, useTutorialModal } from "../components/TutorialModal";
 import { WalletStatusCard } from "../components/WalletStatusCard";
 import { env } from "../env";
 import { useBlockSweeperGame } from "../hooks/useBlockSweeperGame";
+import { useTargetChain } from "../hooks/useTargetChain";
 import { useWeeklyLeaderboard } from "../hooks/useWeeklyLeaderboard";
 import { useWeeklyStats } from "../hooks/useWeeklyStats";
 
 export function HomeScreen() {
   const [activeTab, setActiveTab] = useState<"leaderboard" | "home" | "profile">("home");
-  const game = useBlockSweeperGame();
+  const { targetChainId, targetChainName, isMainnet, toggleChain } = useTargetChain();
+  const game = useBlockSweeperGame(targetChainId, targetChainName);
   const leaderboard = useWeeklyLeaderboard(game.weekId, game.statsRefreshKey);
   const weeklyStats = useWeeklyStats(game.walletAddress, game.weekId, game.statsRefreshKey);
 
@@ -65,7 +67,13 @@ export function HomeScreen() {
           isLoading={leaderboard.isLoading}
         />
       ) : null}
-      {activeTab === "profile" ? <WalletStatusCard /> : null}
+      {activeTab === "profile" ? (
+        <WalletStatusCard
+          isMainnet={isMainnet}
+          targetChainName={targetChainName}
+          onToggleChain={toggleChain}
+        />
+      ) : null}
 
       {game.isSessionOpen ? (
         <GameSessionScreen
