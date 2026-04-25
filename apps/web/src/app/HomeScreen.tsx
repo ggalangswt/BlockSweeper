@@ -14,7 +14,7 @@ import { useWeeklyStats } from "../hooks/useWeeklyStats";
 
 export function HomeScreen() {
   const [activeTab, setActiveTab] = useState<"leaderboard" | "home" | "profile">("home");
-  const { targetChainId, targetChainName, isMainnet, toggleChain } = useTargetChain();
+  const { targetChainId, targetChainName, isMainnet, isSwitching, switchError, toggleChain } = useTargetChain();
   const game = useBlockSweeperGame(targetChainId, targetChainName);
   const leaderboard = useWeeklyLeaderboard(game.weekId, game.statsRefreshKey);
   const weeklyStats = useWeeklyStats(game.walletAddress, game.weekId, game.statsRefreshKey);
@@ -71,6 +71,8 @@ export function HomeScreen() {
         <WalletStatusCard
           isMainnet={isMainnet}
           targetChainName={targetChainName}
+          isSwitching={isSwitching}
+          switchError={switchError}
           onToggleChain={toggleChain}
         />
       ) : null}
