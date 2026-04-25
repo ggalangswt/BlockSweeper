@@ -1,14 +1,19 @@
 import { useAccount } from "wagmi";
 
-import { SUPPORTED_CHAINS, getChainName, getTargetChainName, isSupportedChain } from "../lib/chains";
+import { SUPPORTED_CHAINS, getChainName, isSupportedChain } from "../lib/chains";
 import { isMiniPayProvider } from "../lib/ethereum";
 import { useWalletChainId } from "../hooks/useWalletChainId";
 
-export function WalletStatusCard() {
+type WalletStatusCardProps = {
+  isMainnet: boolean;
+  targetChainName: string;
+  onToggleChain: () => void;
+};
+
+export function WalletStatusCard({ isMainnet, targetChainName, onToggleChain }: WalletStatusCardProps) {
   const { address, connector, isConnected, status } = useAccount();
   const chainId = useWalletChainId();
   const supported = isSupportedChain(chainId);
-  const targetChainName = getTargetChainName();
   const readinessLabel = supported ? "Ready to play" : "Wrong network";
   const shortAddress = isConnected ? `${address?.slice(0, 8)}...${address?.slice(-6)}` : "Not connected";
 
@@ -64,6 +69,20 @@ export function WalletStatusCard() {
         </div>
       </dl>
 
+      <button
+        className="chain-switch-button"
+        onClick={onToggleChain}
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M4 10L1 7L4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M12 6L15 9L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M1 7H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M15 9H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        Switch to {isMainnet ? "Alfajores (Testnet)" : "Celo (Mainnet)"}
+      </button>
+
       {!supported && isConnected ? (
         <div className="network-banner network-banner-compact" role="alert">
           <p className="network-banner-title">Wrong network</p>
@@ -79,3 +98,4 @@ export function WalletStatusCard() {
     </section>
   );
 }
+
