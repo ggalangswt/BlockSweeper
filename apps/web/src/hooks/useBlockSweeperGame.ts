@@ -10,7 +10,7 @@ import {
   type StartGameResponse,
 } from "../lib/api/blocksweeperApi";
 import { getCurrentWeekId } from "../lib/contracts/blockSweeper";
-import { getTargetChainId, getTargetChainName, isSupportedChain } from "../lib/chains";
+import { isSupportedChain } from "../lib/chains";
 import {
   applyFlags,
   applyRevealResult,
@@ -89,13 +89,11 @@ function toReadableErrorMessage(
   return message;
 }
 
-export function useBlockSweeperGame() {
+export function useBlockSweeperGame(targetChainId: number, targetChainName: string) {
   const { address, isConnected } = useAccount();
   const walletChainId = useWalletChainId();
-  const playContract = usePlayBlockSweeper();
+  const playContract = usePlayBlockSweeper(targetChainId);
   const isMiniPay = isMiniPayProvider();
-  const targetChainId = getTargetChainId();
-  const targetChainName = getTargetChainName();
   const [phase, setPhase] = useState<GamePhase>("idle");
   const [board, setBoard] = useState<GameBoard | null>(null);
   const [session, setSession] = useState<StartGameResponse | null>(null);
