@@ -1030,6 +1030,11 @@ select {
   background: rgba(243, 247, 84, 0.12);
 }
 
+.chain-switch-button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 @media (min-width: 640px) {
   .shell {
     padding-top: 2rem;

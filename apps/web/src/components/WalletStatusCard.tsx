@@ -7,10 +7,12 @@ import { useWalletChainId } from "../hooks/useWalletChainId";
 type WalletStatusCardProps = {
   isMainnet: boolean;
   targetChainName: string;
+  isSwitching: boolean;
+  switchError: string | null;
   onToggleChain: () => void;
 };
 
-export function WalletStatusCard({ isMainnet, targetChainName, onToggleChain }: WalletStatusCardProps) {
+export function WalletStatusCard({ isMainnet, targetChainName, isSwitching, switchError, onToggleChain }: WalletStatusCardProps) {
   const { address, connector, isConnected, status } = useAccount();
   const chainId = useWalletChainId();
   const supported = isSupportedChain(chainId);
@@ -71,7 +73,8 @@ export function WalletStatusCard({ isMainnet, targetChainName, onToggleChain }: 
 
       <button
         className="chain-switch-button"
-        onClick={onToggleChain}
+        disabled={isSwitching}
+        onClick={() => void onToggleChain()}
         type="button"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -80,8 +83,10 @@ export function WalletStatusCard({ isMainnet, targetChainName, onToggleChain }: 
           <path d="M1 7H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           <path d="M15 9H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
-        Switch to {isMainnet ? "Alfajores (Testnet)" : "Celo (Mainnet)"}
+        {isSwitching ? "Switching network..." : `Switch to ${isMainnet ? "Alfajores (Testnet)" : "Celo (Mainnet)"}`}
       </button>
+
+      {switchError ? <p className="status-error">{switchError}</p> : null}
 
       {!supported && isConnected ? (
         <div className="network-banner network-banner-compact" role="alert">
