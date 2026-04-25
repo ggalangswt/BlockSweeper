@@ -6,6 +6,7 @@ export const supportedChains = [celo, celoSepolia] as const;
 export const SUPPORTED_CHAINS = supportedChains.map((chain) => chain.name);
 const displayChains = [celo, celoSepolia, mainnet, arbitrum, arbitrumSepolia] as const;
 
+/** Default target chain (based on env). Prefer useTargetChain() hook in React components. */
 export function getTargetChainId() {
   return env.registryAddressCelo ? celo.id : celoSepolia.id;
 }
@@ -29,3 +30,4 @@ export function getChainName(chainId?: number) {
 
   return displayChains.find((chain) => chain.id === chainId)?.name ?? `Chain ${chainId}`;
 }
+

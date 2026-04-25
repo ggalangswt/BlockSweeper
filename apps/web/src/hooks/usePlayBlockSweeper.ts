@@ -2,12 +2,11 @@ import { useMemo } from "react";
 import { useChainId, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 import { getBlockSweeperRegistryConfig, getCurrentWeekId } from "../lib/contracts/blockSweeper";
-import { getTargetChainId, getTargetChainName } from "../lib/chains";
+import { getChainName } from "../lib/chains";
 import { isMiniPayProvider } from "../lib/ethereum";
 
-export function usePlayBlockSweeper() {
+export function usePlayBlockSweeper(targetChainId: number) {
   const chainId = useChainId();
-  const targetChainId = getTargetChainId();
   const registry = useMemo(
     () => getBlockSweeperRegistryConfig(targetChainId),
     [targetChainId],
@@ -28,7 +27,7 @@ export function usePlayBlockSweeper() {
 
     if (chainId !== targetChainId) {
       if (isMiniPayProvider()) {
-        throw new Error(`This app requires ${getTargetChainName()}. Switch networks in MiniPay and try again.`);
+        throw new Error(`This app requires ${getChainName(targetChainId)}. Switch networks in MiniPay and try again.`);
       }
 
       await switchChainAsync({ chainId: targetChainId });
