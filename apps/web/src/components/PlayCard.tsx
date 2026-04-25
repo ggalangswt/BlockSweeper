@@ -9,7 +9,7 @@ export function PlayCard() {
   const chainId = useChainId();
   const currentWeekId = getCurrentWeekId();
   const contractAddress = getBlockSweeperRegistryAddress(chainId);
-  const { play, hash, error, isPending, isConfirming, isConfirmed } = usePlayBlockSweeper();
+  const { play, hash, error, isPending, isConfirming, isConfirmed } = usePlayBlockSweeper(chainId);
 
   return (
     <section className="panel play-panel">
