@@ -30,6 +30,7 @@ type GamePanelProps = {
   onSwitchNetwork: () => Promise<void> | void;
   onReveal: (row: number, col: number) => Promise<void> | void;
   onFlag: (row: number, col: number) => void;
+  onOpenTutorial: () => void;
 };
 
 export function GamePanel({
@@ -55,6 +56,7 @@ export function GamePanel({
   onStart,
   onSwitchNetwork,
   onReveal,
+  onOpenTutorial,
   onFlag,
 }: GamePanelProps) {
   const statusText = useMemo(() => {
@@ -174,6 +176,18 @@ export function GamePanel({
           {phase === "playing" ? "Restart Run" : "Start Run"}
         </button>
       )}
+
+      <button
+        className="how-to-sweep-button"
+        onClick={onOpenTutorial}
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+          <text x="8" y="11.5" textAnchor="middle" fill="currentColor" fontSize="10" fontWeight="700">?</text>
+        </svg>
+        How to Sweep
+      </button>
     </section>
   );
 }
