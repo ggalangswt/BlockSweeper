@@ -264,6 +264,10 @@ select {
   border-radius: 999px;
 }
 
+.leaderboard-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+
 .leaderboard-row {
   display: flex;
   align-items: center;
@@ -1108,6 +1112,10 @@ select {
 .tutorial-modal::-webkit-scrollbar-thumb {
   background: #f3f754;
   border-radius: 999px;
+}
+
+.tutorial-modal::-webkit-scrollbar-button {
+  display: none;
 }
 
 .tutorial-modal-header {
