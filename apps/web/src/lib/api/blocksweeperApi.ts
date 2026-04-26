@@ -91,6 +91,22 @@ export type WeeklyStatsResponse = {
   lastPlayedAt: string | null;
 };
 
+export type RecentRun = {
+  sessionId: string;
+  walletAddress: string;
+  txHash: string;
+  weekId: number;
+  status: "won" | "lost";
+  createdAt: string;
+  finishedAt: string | null;
+  revealedSafeCells: number;
+};
+
+export type RecentRunsResponse = {
+  walletAddress: string;
+  runs: RecentRun[];
+};
+
 async function request<T>(path: string, init?: RequestInit) {
   const response = await fetch(`${env.apiBaseUrl}${path}`, {
     ...init,
@@ -143,4 +159,8 @@ export function getLeaderboard(weekId: number) {
 
 export function getWeeklyStats(walletAddress: string, weekId: number) {
   return request<WeeklyStatsResponse>(`/game/stats/${walletAddress}?weekId=${weekId}`);
+}
+
+export function getRecentRuns(walletAddress: string) {
+  return request<RecentRunsResponse>(`/game/recent/${walletAddress}`);
 }

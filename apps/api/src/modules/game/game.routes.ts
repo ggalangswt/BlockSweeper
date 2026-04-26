@@ -94,6 +94,18 @@ export const gameRoutes: FastifyPluginAsync<GameRoutesOptions> = async (fastify,
       );
   });
 
+  fastify.get("/recent/:walletAddress", async (request, reply) => {
+    const parsed = walletStatsParamsSchema.safeParse(request.params);
+    if (!parsed.success) {
+      return reply.status(400).send({
+        message: "Invalid wallet address",
+        issues: parsed.error.flatten(),
+      });
+    }
+
+    return reply.status(200).send(await options.gameService.getRecentRuns(parsed.data.walletAddress, 5));
+  });
+
   fastify.get("/:sessionId", async (request, reply) => {
     const paramsSchema = z.object({
       sessionId: z.string().min(1),
