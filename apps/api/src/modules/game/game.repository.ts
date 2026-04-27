@@ -115,7 +115,7 @@ export class InMemoryGameSessionRepository implements GameSessionRepository {
         walletAddress: session.walletAddress,
         txHash: session.txHash,
         weekId: session.weekId,
-        status: session.status,
+        status: session.status as RecentRun["status"],
         createdAt: session.createdAt,
         finishedAt: session.finishedAt,
         revealedSafeCells: session.revealedCellKeys.length,
