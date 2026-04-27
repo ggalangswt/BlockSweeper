@@ -259,6 +259,57 @@ select {
   border-radius: 999px;
 }
 
+.recent-runs-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.recent-runs-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.recent-run-item {
+  border-radius: 1rem;
+  padding: 0.9rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.recent-run-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.recent-run-time {
+  color: #aca792;
+  font-size: 0.78rem;
+}
+
+.recent-run-grid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.recent-run-grid strong {
+  display: block;
+  margin-top: 0.1rem;
+  font-family: "Upheaval", sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+}
+
+.recent-run-hash {
+  margin: 0.8rem 0 0;
+  color: #c8c1ad;
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
 .leaderboard-scroll::-webkit-scrollbar-thumb {
   background: #f3f754;
   border-radius: 999px;

@@ -157,4 +157,11 @@ export class GameService {
   async getWeeklyStats(walletAddress: string, weekId: number) {
     return this.repository.getWeeklyStats(walletAddress, weekId || getCurrentWeekId());
   }
+
+  async getRecentRuns(walletAddress: string, limit = 5) {
+    return {
+      walletAddress,
+      runs: await this.repository.getRecentRuns(walletAddress, limit),
+    };
+  }
 }

@@ -1,6 +1,6 @@
 import type { Pool } from "pg";
 
-import type { GameSession, WeeklyLeaderboardEntry, WeeklyPlayerStats } from "./game.types.js";
+import type { GameSession, RecentRun, WeeklyLeaderboardEntry, WeeklyPlayerStats } from "./game.types.js";
 
 export interface GameSessionRepository {
   create(session: GameSession): Promise<GameSession> | GameSession;
@@ -8,6 +8,7 @@ export interface GameSessionRepository {
   update(session: GameSession): Promise<GameSession> | GameSession;
   getWeeklyLeaderboard(weekId: number): Promise<WeeklyLeaderboardEntry[]> | WeeklyLeaderboardEntry[];
   getWeeklyStats(walletAddress: string, weekId: number): Promise<WeeklyPlayerStats> | WeeklyPlayerStats;
+  getRecentRuns(walletAddress: string, limit: number): Promise<RecentRun[]> | RecentRun[];
 }
 
 export class InMemoryGameSessionRepository implements GameSessionRepository {
@@ -94,6 +95,31 @@ export class InMemoryGameSessionRepository implements GameSessionRepository {
       totalPlays: sessions.length,
       lastPlayedAt,
     };
+  }
+
+  getRecentRuns(walletAddress: string, limit: number) {
+    return Array.from(this.sessions.values())
+      .filter(
+        (session) =>
+          session.walletAddress.toLowerCase() === walletAddress.toLowerCase() &&
+          session.status !== "playing",
+      )
+      .sort((left, right) => {
+        const rightTime = new Date(right.finishedAt ?? right.createdAt).getTime();
+        const leftTime = new Date(left.finishedAt ?? left.createdAt).getTime();
+        return rightTime - leftTime;
+      })
+      .slice(0, limit)
+      .map((session) => ({
+        sessionId: session.id,
+        walletAddress: session.walletAddress,
+        txHash: session.txHash,
+        weekId: session.weekId,
+        status: session.status,
+        createdAt: session.createdAt,
+        finishedAt: session.finishedAt,
+        revealedSafeCells: session.revealedCellKeys.length,
+      }));
   }
 }
 
@@ -271,6 +297,48 @@ export class PostgresGameSessionRepository implements GameSessionRepository {
       totalPlays: Number(row.total_plays),
       lastPlayedAt: row.last_played_at ? new Date(row.last_played_at).toISOString() : null,
     };
+  }
+
+  async getRecentRuns(walletAddress: string, limit: number) {
+    const result = await this.pool.query<{
+      id: string;
+      wallet_address: string;
+      tx_hash: string;
+      week_id: number;
+      status: RecentRun["status"];
+      created_at: string | Date;
+      finished_at: string | Date | null;
+      revealed_safe_cells: number;
+    }>(
+      `
+        select
+          id,
+          wallet_address,
+          tx_hash,
+          week_id,
+          status,
+          created_at,
+          finished_at,
+          jsonb_array_length(coalesce(revealed_cell_keys, '[]'::jsonb)) as revealed_safe_cells
+        from public.game_sessions
+        where lower(wallet_address) = lower($1)
+          and status in ('won', 'lost')
+        order by coalesce(finished_at, created_at) desc
+        limit $2
+      `,
+      [walletAddress, limit],
+    );
+
+    return result.rows.map((row) => ({
+      sessionId: row.id,
+      walletAddress: row.wallet_address,
+      txHash: row.tx_hash,
+      weekId: row.week_id,
+      status: row.status,
+      createdAt: new Date(row.created_at).toISOString(),
+      finishedAt: row.finished_at ? new Date(row.finished_at).toISOString() : null,
+      revealedSafeCells: Number(row.revealed_safe_cells),
+    }));
   }
 }
 

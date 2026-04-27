@@ -4,10 +4,12 @@ import { BottomNav } from "../components/BottomNav";
 import { GamePanel } from "../components/GamePanel";
 import { GameSessionScreen } from "../components/GameSessionScreen";
 import { LeaderboardPreview } from "../components/LeaderboardPreview";
+import { RecentRunsPanel } from "../components/RecentRunsPanel";
 import { TutorialModal, useTutorialModal } from "../components/TutorialModal";
 import { WalletStatusCard } from "../components/WalletStatusCard";
 import { env } from "../env";
 import { useBlockSweeperGame } from "../hooks/useBlockSweeperGame";
+import { useRecentRuns } from "../hooks/useRecentRuns";
 import { useTargetChain } from "../hooks/useTargetChain";
 import { useWeeklyLeaderboard } from "../hooks/useWeeklyLeaderboard";
 import { useWeeklyStats } from "../hooks/useWeeklyStats";
@@ -18,6 +20,7 @@ export function HomeScreen() {
   const game = useBlockSweeperGame(targetChainId, targetChainName);
   const leaderboard = useWeeklyLeaderboard(game.weekId, game.statsRefreshKey);
   const weeklyStats = useWeeklyStats(game.walletAddress, game.weekId, game.statsRefreshKey);
+  const recentRuns = useRecentRuns(game.walletAddress, game.statsRefreshKey);
 
   const { shouldAutoOpen } = useTutorialModal();
   const [isTutorialOpen, setIsTutorialOpen] = useState(shouldAutoOpen);
@@ -68,13 +71,21 @@ export function HomeScreen() {
         />
       ) : null}
       {activeTab === "profile" ? (
-        <WalletStatusCard
-          isMainnet={isMainnet}
-          targetChainName={targetChainName}
-          isSwitching={isSwitching}
-          switchError={switchError}
-          onToggleChain={toggleChain}
-        />
+        <>
+          <WalletStatusCard
+            isMainnet={isMainnet}
+            targetChainName={targetChainName}
+            isSwitching={isSwitching}
+            switchError={switchError}
+            onToggleChain={toggleChain}
+          />
+          <RecentRunsPanel
+            error={recentRuns.error}
+            isConnected={game.isConnected || game.isDevBypass}
+            isLoading={recentRuns.isLoading}
+            runs={recentRuns.runs}
+          />
+        </>
       ) : null}
 
       {game.isSessionOpen ? (

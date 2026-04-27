@@ -68,3 +68,14 @@ export type WeeklyPlayerStats = {
   totalPlays: number;
   lastPlayedAt: string | null;
 };
+
+export type RecentRun = {
+  sessionId: string;
+  walletAddress: string;
+  txHash: string;
+  weekId: number;
+  status: Exclude<GameStatus, "playing">;
+  createdAt: string;
+  finishedAt: string | null;
+  revealedSafeCells: number;
+};
